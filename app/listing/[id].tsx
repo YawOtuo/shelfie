@@ -1,15 +1,14 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { ArrowLeft, Heart, Share2 } from "lucide-react-native";
 import { useState } from "react";
-import { ScrollView, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { DetailHeader } from "../../components/DetailHeader";
+import { ScrollView, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ImageGallery } from "../../components/ImageGallery";
 import { ContactFarmSheet } from "../../components/listing-detail/ContactFarmSheet";
 import { ListingDescription } from "../../components/listing-detail/ListingDescription";
 import { ListingHeader } from "../../components/listing-detail/ListingHeader";
 import { LocationSection } from "../../components/listing-detail/LocationSection";
 import { PlaceOrderSheet } from "../../components/listing-detail/PlaceOrderSheet";
-import { PriceCard } from "../../components/listing-detail/PriceCard";
 import { PriceCardSheet } from "../../components/listing-detail/PriceCardSheet";
 import { ReviewsSection } from "../../components/listing-detail/ReviewsSection";
 import { SimilarListings } from "../../components/listing-detail/SimilarListings";
@@ -19,17 +18,22 @@ import { SharedPortionDetails } from "../../components/listing/SharedPortionDeta
 import { Button } from "../../components/ui/Button";
 import { LoadingSpinner } from "../../components/ui/LoadingSpinner";
 import { Text } from "../../components/ui/Text";
-import { useFarm } from "../../lib/hooks/useFarms";
-import { useListing, useListings } from "../../lib/hooks/useListings";
+import { useGetFarmById } from "../../lib/hooks/useFarms";
+import { useGetListingImages } from "../../lib/hooks/useListingImages";
+import { useGetListingById, useListings } from "../../lib/hooks/useListings";
 
 export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const listingId = id ? parseInt(id, 10) : 0;
-  const { listing, isLoading, error } = useListing(listingId);
-  const { farm: farmData } = useFarm(listing?.farm_id?.toString() || "");
-  const farm = farmData ?? null;
+  const { data: listing, isLoading, error } = useGetListingById(listingId);
+  const { data: farmData } = useGetFarmById(listing?.farm_id?.toString() || "");
+  const farm = farmData || null;
+  
+  // Fetch all images from backend
+  const { data: imagesData, isLoading: isLoadingImages } = useGetListingImages(listingId);
+  const allImages = imagesData?.images || [];
+  
   const [isSaved, setIsSaved] = useState(false);
   const [isContactSheetVisible, setIsContactSheetVisible] = useState(false);
   const [isOrderSheetVisible, setIsOrderSheetVisible] = useState(false);
@@ -41,14 +45,56 @@ export default function ListingDetailScreen() {
     limit: 4,
   });
 
+  // Combine images from backend API and listing object
+  // Use backend API images as primary source, merge with listing images if needed
+  const listingImages = listing?.images || [];
+  
+  // Create a map of image URLs to avoid duplicates
+  type ImageItem = { id: number; image_url: string; is_primary?: boolean; created_at?: string };
+  const imageMap = new Map<string, ImageItem>();
+  
+  // Add images from backend API first (these are the source of truth)
+  allImages.forEach((img: { id: number; image_url: string; is_primary?: boolean; created_at?: string }) => {
+    if (img.image_url) {
+      imageMap.set(img.image_url, {
+        id: img.id,
+        image_url: img.image_url,
+        is_primary: img.is_primary,
+        created_at: img.created_at,
+      });
+    }
+  });
+  
+  // Add listing images that aren't already in the map (fallback)
+  listingImages.forEach((img: { id: number; image_url: string; is_primary?: boolean; created_at?: string }) => {
+    if (img.image_url && !imageMap.has(img.image_url)) {
+      imageMap.set(img.image_url, {
+        id: img.id,
+        image_url: img.image_url,
+        is_primary: img.is_primary,
+        created_at: img.created_at || new Date().toISOString(),
+      });
+    }
+  });
+  
+  // Convert map to array and sort: primary image first, then by creation date
+  const displayImages = Array.from(imageMap.values()).sort((a, b) => {
+    // Primary image first
+    if (a.is_primary && !b.is_primary) return -1;
+    if (!a.is_primary && b.is_primary) return 1;
+    // Then by creation date (newest first)
+    const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return dateB - dateA;
+  });
+
   const filteredSimilarListings = similarListings.filter(
     (item) => item.id !== listingId
   );
 
-  if (isLoading) {
+  if (isLoading || isLoadingImages) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
-        <DetailHeader showBack={true} />
+      <SafeAreaView className="flex-1 bg-white" style={{ backgroundColor: '#FFFFFF' }} edges={["top"]}>
         <View className="flex-1 items-center justify-center">
           <LoadingSpinner size="large" color="#11964a" text="Loading listing..." />
         </View>
@@ -58,8 +104,7 @@ export default function ListingDetailScreen() {
 
   if (error || !listing) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
-        <DetailHeader showBack={true} />
+      <SafeAreaView className="flex-1 bg-white" style={{ backgroundColor: '#FFFFFF' }} edges={["top"]}>
         <View className="flex-1 items-center justify-center px-4">
           <Text className="text-center text-red-500 text-base mb-4">
             Error loading listing. Please try again.
@@ -76,7 +121,6 @@ export default function ListingDetailScreen() {
     title,
     farm_location,
     location,
-    images,
     selling_price_per_unit,
     type,
     template,
@@ -148,82 +192,200 @@ export default function ListingDetailScreen() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-white px-2" edges={["top", "bottom", "left", "right"]}>
-      <DetailHeader
-        showBack={true}
-        onShare={handleShare}
-        onSave={handleSave}
-        isSaved={isSaved}
-      />
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header Section */}
-        <View style={{ paddingTop: insets.top + 40 }}>
-          <ListingHeader
-            title={title}
-            farm={farm}
-            displayLocation={displayLocation}
-            listing={listing}
-          />
-        </View>
+    <View className="flex-1 bg-white" style={{ backgroundColor: '#FFFFFF' }}>
+      <SafeAreaView className="flex-1" edges={["top"]}>
+        <ScrollView 
+          className="flex-1" 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 120 }}
+        >
+          {/* Image Gallery with Floating Header */}
+          <View className="relative" style={{ height: 420 }}>
+            {displayImages.length > 0 ? (
+              <ImageGallery 
+                images={displayImages} 
+                height={420} 
+              />
+            ) : (
+              <View className="w-full bg-gray-200 items-center justify-center" style={{ height: 420 }}>
+                <Text className="text-gray-500 text-lg">No images available</Text>
+              </View>
+            )}
+            
+            {/* Floating Header Actions */}
+            <View className="absolute top-0 left-0 right-0 flex-row items-center justify-between px-4 pt-3">
+              <TouchableOpacity
+                onPress={() => router.back()}
+                className="w-11 h-11 items-center justify-center rounded-full"
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}
+                activeOpacity={0.8}
+              >
+                <ArrowLeft size={22} color="#1F2937" strokeWidth={2.5} />
+              </TouchableOpacity>
+              <View className="flex-row items-center gap-2">
+                <TouchableOpacity
+                  onPress={handleShare}
+                  className="w-11 h-11 items-center justify-center rounded-full"
+                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}
+                  activeOpacity={0.8}
+                >
+                  <Share2 size={20} color="#1F2937" strokeWidth={2.5} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleSave}
+                  className="w-11 h-11 items-center justify-center rounded-full"
+                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}
+                  activeOpacity={0.8}
+                >
+                  <Heart
+                    size={20}
+                    color={isSaved ? "#EF4444" : "#1F2937"}
+                    fill={isSaved ? "#EF4444" : "transparent"}
+                    strokeWidth={2.5}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+            
+            {/* Parallax Content Card - Overlapping the image */}
+            <View 
+              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl pt-6 px-5"
+              style={{ 
+                backgroundColor: '#FFFFFF',
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: -4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 12,
+                elevation: 8,
+              }}
+            >
+              {/* Title */}
+              <Text className="text-2xl font-bold text-gray-900 mb-3 leading-tight">
+                {title}
+              </Text>
+              
+              {/* Farm & Location Info */}
+              <ListingHeader
+                title={title}
+                farm={farm}
+                displayLocation={displayLocation}
+                listing={listing}
+              />
+            </View>
+          </View>
 
-        {/* Image Gallery */}
-        <View className="px-4 mb-4">
-          <ImageGallery images={images || []} height={220} />
-        </View>
+          {/* Continuing white background */}
+          <View className="bg-white" style={{ backgroundColor: '#FFFFFF' }}>
 
-        {/* Description */}
-        <ListingDescription description={descriptionForComponent} />
+          {/* Price & Type Badge */}
+          <View className="bg-white px-5 py-5 border-t border-gray-100" style={{ backgroundColor: '#FFFFFF' }}>
+            <View className="flex-row items-center justify-between mb-3">
+              <View className="flex-1">
+                <Text className="text-sm text-gray-500 mb-1">Starting from</Text>
+                <Text className="text-3xl font-bold text-primary">
+                  GHS {price?.toLocaleString() || "0"}
+                </Text>
+              </View>
+              {type && (
+                <View className="bg-primary/5 px-4 py-2 rounded-xl">
+                  <Text className="text-xs font-semibold text-primary uppercase tracking-wider">
+                    {type === "FULL_ANIMAL" ? "Full Animal" : type === "SHARED_PORTIONS" ? "Shared Portions" : "Frozen"}
+                  </Text>
+                </View>
+              )}
+            </View>
+            
+            {/* Key Features */}
+            <View className="flex-row items-center gap-4 pt-3 border-t border-gray-100">
+              {listing.delivery && (
+                <View className="flex-row items-center gap-1.5">
+                  <View className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  <Text className="text-xs font-medium text-gray-700">Delivery</Text>
+                </View>
+              )}
+              <View className="flex-row items-center gap-1.5">
+                <View className="w-1.5 h-1.5 rounded-full bg-primary" />
+                <Text className="text-xs font-medium text-gray-700">In Stock</Text>
+              </View>
+              <View className="flex-row items-center gap-1.5">
+                <View className="w-1.5 h-1.5 rounded-full bg-primary" />
+                <Text className="text-xs font-medium text-gray-700">Secure</Text>
+              </View>
+            </View>
+          </View>
 
-        {/* Divider */}
-        <View className="h-3 bg-white" />
+          {/* Description */}
+          <ListingDescription description={descriptionForComponent} />
 
-        {/* Price Card */}
-        <PriceCard
-          listing={listing}
-          price={price}
-          displayLocation={displayLocation}
-          isSaved={isSaved}
-          onSave={handleSave}
-          onPlaceOrder={handlePlaceOrder}
-        />
-
-        {/* Divider */}
-        <View className="h-3 bg-white" />
-
-        {/* Type-Specific Details */}
-        {type === "FULL_ANIMAL" && full_animal_details && (
-          <>
+          {/* Type-Specific Details */}
+          {type === "FULL_ANIMAL" && full_animal_details && (
             <FullAnimalDetails details={full_animal_details} breed={breed} />
-            <View className="h-3 bg-gray-50" />
-          </>
-        )}
+          )}
 
-        {type === "SHARED_PORTIONS" && shared_portion_details && (
-          <>
+          {type === "SHARED_PORTIONS" && shared_portion_details && (
             <SharedPortionDetails details={shared_portion_details} />
-            <View className="h-3 bg-gray-50" />
-          </>
-        )}
+          )}
 
-        {type === "FROZEN" && frozen_details && (
-          <>
+          {type === "FROZEN" && frozen_details && (
             <FrozenDetails details={frozen_details} />
-            <View className="h-3 bg-gray-50" />
-          </>
-        )}
+          )}
 
+          {/* Location */}
+          <LocationSection displayLocation={displayLocation} />
 
-        {/* Location */}
-        <LocationSection displayLocation={displayLocation} />
+          {/* Reviews Section */}
+          <ReviewsSection reviews={mockReviews} />
 
-        {/* Reviews Section */}
-        <ReviewsSection reviews={mockReviews} />
+          {/* Similar Listings */}
+          <SimilarListings listings={filteredSimilarListings} />
 
-        {/* Similar Listings */}
-        <SimilarListings listings={filteredSimilarListings} />
+          {/* Bottom Spacing */}
+          <View className="h-8" />
+          </View>
+        </ScrollView>
 
-        {/* Bottom Spacing */}
-      </ScrollView>
+        {/* Sticky CTA Button */}
+        <View 
+          className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200"
+          style={{ 
+            backgroundColor: '#FFFFFF',
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: -4 },
+            shadowOpacity: 0.08,
+            shadowRadius: 12,
+            elevation: 10,
+          }}
+        >
+          <SafeAreaView edges={["bottom"]}>
+            <View className="px-5 pt-4 pb-2">
+              <View className="flex-row items-center gap-3">
+                <View className="flex-1">
+                  <Text className="text-xs text-gray-500 mb-0.5">Total Price</Text>
+                  <Text className="text-xl font-bold text-gray-900">
+                    GHS {price?.toLocaleString() || "0"}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={handlePlaceOrder}
+                  className="bg-primary px-8 py-4 rounded-2xl"
+                  style={{
+                    shadowColor: "#11964a",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 6,
+                  }}
+                  activeOpacity={0.9}
+                >
+                  <Text className="text-white font-bold text-base">
+                    I'm Interested
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </SafeAreaView>
+        </View>
+      </SafeAreaView>
 
       {/* Contact Farm Bottom Sheet */}
       <ContactFarmSheet
@@ -257,6 +419,6 @@ export default function ListingDetailScreen() {
           setIsOrderSheetVisible(true);
         }}
       />
-    </SafeAreaView>
+    </View>
   );
 }

@@ -24,17 +24,17 @@ export function ImageGallery({ images, height = 400 }: ImageGalleryProps) {
     );
   }
 
-  const imageWidth = screenWidth - 32; // Account for padding (16px on each side)
+  const fullWidth = screenWidth;
 
   const handleScroll = (event: any) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
-    const index = Math.round(scrollPosition / imageWidth);
+    const index = Math.round(scrollPosition / fullWidth);
     setActiveIndex(index);
   };
 
   const goToSlide = (index: number) => {
     scrollViewRef.current?.scrollTo({
-      x: index * imageWidth,
+      x: index * fullWidth,
       animated: true,
     });
     setActiveIndex(index);
@@ -62,18 +62,18 @@ export function ImageGallery({ images, height = 400 }: ImageGalleryProps) {
         onScroll={handleScroll}
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingHorizontal: 0 }}
-        snapToInterval={imageWidth + 12}
+        snapToInterval={fullWidth}
         decelerationRate="fast"
       >
         {images.map((image, index) => (
           <View
             key={image.id || index}
-            style={{ width: imageWidth, marginRight: index < images.length - 1 ? 12 : 0 }}
+            style={{ width: fullWidth }}
           >
             <Image
               source={{ uri: image.image_url }}
-              className="w-full rounded-2xl shadow-sm"
-              style={{ height, width: imageWidth }}
+              className="w-full"
+              style={{ height, width: fullWidth }}
               resizeMode="cover"
             />
           </View>

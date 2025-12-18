@@ -11,7 +11,7 @@ import { Text } from "../../components/ui/Text";
 import { Button } from "../../components/ui/Button";
 import { Tabs } from "../../components/ui/Tabs";
 import { useListings } from "../../lib/hooks/useListings";
-import { useFarms } from "../../lib/hooks/useFarms";
+import { useGetAllFarms } from "../../lib/hooks/useFarms";
 import { Listing } from "../../lib/types/listing";
 import { Farm } from "../../lib/types/farm";
 
@@ -31,7 +31,7 @@ export default function SavedScreen() {
   const { listings, isLoading: loadingListings, refetch: refetchListings } = useListings({
     limit: 50,
   });
-  const { farms, isLoading: loadingFarms, refetch: refetchFarms } = useFarms({
+  const { data: farms = []  , isLoading: loadingFarms, refetch: refetchFarms } = useGetAllFarms({
     limit: 50,
   });
 
@@ -41,7 +41,7 @@ export default function SavedScreen() {
   const savedFarmIds = [1, 2]; // Mock saved farm IDs
 
   const savedListings = listings.filter((listing) => savedListingIds.includes(listing.id));
-  const savedFarms = farms.filter((farm) => savedFarmIds.includes(farm.id));
+  const savedFarms = farms.filter((farm: Farm ) => savedFarmIds.includes(farm.id));
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -69,27 +69,27 @@ export default function SavedScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white" style={{ backgroundColor: '#FFFFFF' }} edges={['left', 'right']}>
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#11964a" />
         }
+        style={{ backgroundColor: '#FFFFFF' }}
       >
         {/* Header */}
-        <View className="px-4 pt-6 pb-2">
-          <View className="flex-row items-center gap-2 mb-1">
-            <Heart size={28} color="#11964a" fill="#11964a" />
-            <Text className="text-3xl font-bold text-primary">Saved</Text>
-          </View>
-          <Text className="text-gray-600 text-base mt-1">
+        <View className="px-5 pt-2 pb-3 border-b border-gray-100" style={{ backgroundColor: '#FFFFFF' }}>
+          <Text className="text-xl font-bold text-gray-900 mb-2" variant="bold">
+            Saved Items
+          </Text>
+          <Text className="text-sm text-gray-600">
             Your saved listings and farms
           </Text>
         </View>
 
         {/* Tabs */}
-        <View className="pt-4">
+        <View className="pt-3 bg-white" style={{ backgroundColor: '#FFFFFF' }}>
           <Tabs
             tabs={SAVED_TABS.map((tab) => ({
               id: tab.id,
@@ -104,7 +104,7 @@ export default function SavedScreen() {
         </View>
 
         {/* Content */}
-        <View className="px-4 pb-6">
+        <View className="px-5 pb-6 bg-white" style={{ backgroundColor: '#FFFFFF' }}>
           {activeTab === "listings" ? (
             <>
               {loadingListings ? (

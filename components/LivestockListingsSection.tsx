@@ -1,17 +1,19 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { FlatList, View } from "react-native";
-import { Tabs } from "./ui/Tabs";
-import { ListingCard } from "./ListingCard";
+import { Listing, LivestockCategory } from "../lib/types/listing";
+import { ListingCardV3 } from "./ListingCardV3";
 import { EmptyState } from "./ui/EmptyState";
 import { LoadingSpinner } from "./ui/LoadingSpinner";
+import { Tabs } from "./ui/Tabs";
 import { Text } from "./ui/Text";
-import { Listing, LivestockCategory } from "../lib/types/listing";
 
 interface LivestockListingsSectionProps {
   listings: Listing[];
   isLoading: boolean;
   error: Error | null;
   searchQuery: string;
+  activeCategory?: LivestockCategory | "all";
+  onCategoryChange?: (category: LivestockCategory | "all") => void;
   onListingPress: (listingId: number) => void;
 }
 
@@ -29,46 +31,48 @@ export function LivestockListingsSection({
   isLoading,
   error,
   searchQuery,
+  activeCategory: externalActiveCategory,
+  onCategoryChange,
   onListingPress,
 }: LivestockListingsSectionProps) {
-  const [activeCategory, setActiveCategory] = useState<LivestockCategory | "all">("all");
+  // Use external category if provided, otherwise use internal state
+  const [internalCategory, setInternalCategory] = useState<LivestockCategory | "all">("all");
+  const activeCategory = externalActiveCategory ?? internalCategory;
 
-  const filteredListings = useMemo(() => {
-    if (activeCategory === "all") {
-      return listings;
+  const handleCategoryChange = (category: LivestockCategory | "all") => {
+    if (onCategoryChange) {
+      onCategoryChange(category);
+    } else {
+      setInternalCategory(category);
     }
-    return listings.filter((listing) => listing.category === activeCategory);
-  }, [listings, activeCategory]);
+  };
+
+  // Listings are already filtered by API, so use them directly
+  const displayListings = listings;
 
   const renderListingItem = ({ item }: { item: Listing }) => (
-    <View className="mr-4 pb-4">
-      <ListingCard
+    <View className="mr-4 mb-1">
+      <ListingCardV3
         listing={item}
         onPress={() => onListingPress(item.id)}
         isHandpicked={item.id === 1}
-        width={200}
       />
     </View>
   );
 
   return (
     <View className="mt-4">
-      <View className="px-4 mb-3 flex-row items-center justify-between">
-        <Text className="text-xl text-primary-dark" variant="bold">
+      <View className="px-4 mb-3">
+        <Text className="text-base text-primary-dark" variant="medium">
           Top Listings
         </Text>
-        {filteredListings.length > 0 && (
-          <Text className="text-sm text-gray-500">
-            {filteredListings.length} {filteredListings.length === 1 ? "listing" : "listings"}
-          </Text>
-        )}
       </View>
 
       {/* Category Tabs */}
       <Tabs
         tabs={CATEGORIES}
         activeTab={activeCategory}
-        onTabChange={(tabId) => setActiveCategory(tabId as LivestockCategory | "all")}
+        onTabChange={(tabId) => handleCategoryChange(tabId as LivestockCategory | "all")}
       />
 
       {isLoading ? (
@@ -81,15 +85,24 @@ export function LivestockListingsSection({
             Error loading listings. Using mock data.
           </Text>
         </View>
-      ) : filteredListings.length > 0 ? (
-        <FlatList
-          data={filteredListings}
-          renderItem={renderListingItem}
-          keyExtractor={(item) => item.id.toString()}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
-        />
+      ) : displayListings.length > 0 ? (
+        <>
+          <FlatList
+            data={displayListings}
+            renderItem={renderListingItem}
+            keyExtractor={(item) => item.id.toString()}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 16 }}
+          />
+          {displayListings.length > 0 && (
+            <View className="px-4 pb-2">
+              <Text className="text-sm text-gray-500 text-right">
+                {displayListings.length} {displayListings.length === 1 ? "listing" : "listings"}
+              </Text>
+            </View>
+          )}
+        </>
       ) : (
         <EmptyState
           iconType={searchQuery ? "search" : "package"}

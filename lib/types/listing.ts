@@ -149,3 +149,22 @@ export interface Listing extends ListingBase {
 
 // Legacy type for backward compatibility
 export type LivestockCategory = "cattle" | "goats" | "sheep" | "poultry" | "pigs";
+
+// Create and Update types
+export interface ListingCreate extends Omit<ListingBase, 'id' | 'user_uid' | 'farm_id' | 'farm_name' | 'created_at' | 'updated_at' | 'images' | 'applied_tags' | 'rating' | 'distance_meters'> {
+  image_urls?: string[];
+  video_urls?: string[];
+  tag_ids?: number[];
+}
+
+export interface ListingUpdate extends Partial<Omit<ListingBase, 'id' | 'user_uid' | 'farm_id' | 'farm_name' | 'created_at' | 'updated_at' | 'images' | 'applied_tags' | 'rating' | 'distance_meters'>> {
+  image_urls?: string[];
+  video_urls?: string[];
+  tag_ids?: number[];
+}
+
+export interface ListingPauseResponse {
+  id: number;
+  paused: boolean;
+  message: string;
+}

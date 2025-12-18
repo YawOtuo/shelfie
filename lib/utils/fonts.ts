@@ -1,14 +1,14 @@
 /**
- * Maps font weight classes to the correct Montserrat font family
+ * Maps font weight classes to the correct Poppins font family
  * Since we're using separate font files for each weight, we need to
  * explicitly set the fontFamily for each weight.
  */
-export const getMontserratFontFamily = (weight: "regular" | "medium" | "semibold" | "bold" = "regular") => {
+export const getPoppinsFontFamily = (weight: "regular" | "medium" | "semibold" | "bold" = "regular") => {
   const fontMap = {
-    regular: "Montserrat_400Regular",
-    medium: "Montserrat_500Medium",
-    semibold: "Montserrat_600SemiBold",
-    bold: "Montserrat_700Bold",
+    regular: "Poppins_400Regular",
+    medium: "Poppins_500Medium",
+    semibold: "Poppins_600SemiBold",
+    bold: "Poppins_700Bold",
   };
   
   return fontMap[weight];
@@ -17,9 +17,9 @@ export const getMontserratFontFamily = (weight: "regular" | "medium" | "semibold
 /**
  * Gets the font style object for a given weight
  */
-export const getMontserratFontStyle = (weight: "regular" | "medium" | "semibold" | "bold" = "regular") => {
+export const getPoppinsFontStyle = (weight: "regular" | "medium" | "semibold" | "bold" = "regular") => {
   return {
-    fontFamily: getMontserratFontFamily(weight),
+    fontFamily: getPoppinsFontFamily(weight),
   };
 };
 

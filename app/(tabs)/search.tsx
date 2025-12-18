@@ -2,7 +2,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Filter, Search, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
-  Dimensions,
   FlatList,
   RefreshControl,
   TextInput,
@@ -10,13 +9,14 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ListingCard } from "../../components/ListingCard";
+import { ListingCardV3 } from "../../components/ListingCardV3";
 import { BottomSheet } from "../../components/ui";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { LoadingSpinner } from "../../components/ui/LoadingSpinner";
+import { Tabs } from "../../components/ui/Tabs";
 import { Text } from "../../components/ui/Text";
 import { useListings } from "../../lib/hooks/useListings";
-import { Listing } from "../../lib/types/listing";
+import { Listing, LivestockCategory } from "../../lib/types/listing";
 
 export default function SearchScreen() {
   const router = useRouter();
@@ -40,6 +40,28 @@ export default function SearchScreen() {
   });
 
   const categories = ["cattle", "goats", "sheep", "poultry", "pigs"];
+
+  // Category tabs for easy filtering
+  const categoryTabs = [
+    { id: "all", label: "All" },
+    { id: "cattle", label: "Cattle" },
+    { id: "goats", label: "Goats" },
+    { id: "sheep", label: "Sheep" },
+    { id: "poultry", label: "Poultry" },
+    { id: "pigs", label: "Pigs" },
+  ];
+
+  // Get active tab (either selectedCategory or "all")
+  const activeTab = selectedCategory || "all";
+
+  // Handle tab change
+  const handleTabChange = (tabId: string) => {
+    if (tabId === "all") {
+      setSelectedCategory(undefined);
+    } else {
+      setSelectedCategory(tabId);
+    }
+  };
 
   // Update category when route params change
   useEffect(() => {
@@ -74,73 +96,93 @@ export default function SearchScreen() {
   };
 
   const renderListingItem = ({ item }: { item: Listing }) => {
-    const screenWidth = Dimensions.get("window").width;
-    const cardWidth = (screenWidth - 32 - 12) / 2; // screen width - padding - gap
     return (
-      <ListingCard
-        listing={item}
-        onPress={() => handleListingPress(item.id)}
-        isHandpicked={false}
-        width={cardWidth}
-      />
+      <View className="px-5 mb-4">
+        <ListingCardV3
+          listing={item}
+          onPress={() => handleListingPress(item.id)}
+          isHandpicked={false}
+        />
+      </View>
     );
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white" style={{ backgroundColor: '#FFFFFF' }} edges={['left', 'right']}>
       {/* Header */}
-      <View className="px-4 pt-6 pb-3 bg-white">
-        <Text className="text-2xl font-bold text-primary mb-3">
-          Search Listings
-        </Text>
-
-        {/* Search Bar */}
-        <View className="flex-row items-center gap-2">
-          <TouchableOpacity
-            className="flex-1 flex-row items-center bg-white rounded-2xl shadow-md px-4 py-3"
-            activeOpacity={1}
-            onPress={() => {
-              // Focus will be handled by TextInput
-            }}
-          >
-            <Search size={20} color="#9CA3AF" />
-            <TextInput
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder="Search livestock, farms, or locations..."
-              placeholderTextColor="#9CA3AF"
-              className="flex-1 ml-3 text-base text-gray-900"
-              autoFocus={false}
-              editable={true}
-              returnKeyType="search"
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery("")}>
-                <X size={18} color="#9CA3AF" />
-              </TouchableOpacity>
-            )}
-          </TouchableOpacity>
+      <View className="px-5 pt-2 pb-3 bg-white border-b border-gray-100" style={{ backgroundColor: '#FFFFFF' }}>
+        <View className="flex-row items-center justify-between mb-3">
+          <View>
+            <Text className="text-xl font-bold text-gray-900" variant="bold">
+              Browse Listings
+            </Text>
+            <Text className="text-sm text-gray-600 mt-1">
+              {listings.length} {listings.length === 1 ? 'listing' : 'listings'} available
+            </Text>
+          </View>
           <TouchableOpacity
             onPress={() => setShowFilters(true)}
-            className={`px-4 py-3 rounded-2xl shadow-md ${
-              hasActiveFilters ? "bg-primary" : "bg-white"
+            className={`px-4 py-2.5 rounded-xl flex-row items-center gap-2 ${
+              hasActiveFilters ? "bg-primary" : "bg-gray-100"
             }`}
+            activeOpacity={0.7}
           >
             <Filter
-              size={20}
-              color={hasActiveFilters ? "#FFFFFF" : "#9CA3AF"}
+              size={18}
+              color={hasActiveFilters ? "#FFFFFF" : "#6B7280"}
+              strokeWidth={2.5}
             />
+            <Text
+              className={`text-sm font-semibold ${
+                hasActiveFilters ? "text-white" : "text-gray-700"
+              }`}
+            >
+              Filter
+            </Text>
+            {hasActiveFilters && (
+              <View className="w-2 h-2 rounded-full bg-white" />
+            )}
           </TouchableOpacity>
+        </View>
+
+        {/* Search Bar */}
+        <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 mt-3">
+          <Search size={18} color="#6B7280" strokeWidth={2.5} />
+          <TextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search livestock..."
+            placeholderTextColor="#9CA3AF"
+            className="flex-1 ml-3 text-gray-900 text-sm"
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity
+              onPress={() => setSearchQuery("")}
+              className="ml-2"
+              activeOpacity={0.7}
+            >
+              <X size={18} color="#6B7280" strokeWidth={2.5} />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
-      {/* Listings Grid */}
+      {/* Category Tabs */}
+      <View className="bg-white border-b border-gray-100" style={{ backgroundColor: '#FFFFFF' }}>
+        <Tabs
+          tabs={categoryTabs}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
+      </View>
+
+      {/* Listings List */}
       {isLoading ? (
-        <View className="flex-1 items-center justify-center">
+        <View className="flex-1 items-center justify-center bg-white" style={{ backgroundColor: '#FFFFFF' }}>
           <LoadingSpinner size="large" color="#11964a" text="Loading listings..." />
         </View>
       ) : error ? (
-        <View className="flex-1 items-center justify-center px-4">
+        <View className="flex-1 items-center justify-center px-4 bg-white" style={{ backgroundColor: '#FFFFFF' }}>
           <Text className="text-center text-red-500 text-base mb-4">
             Error loading listings. Please try again.
           </Text>
@@ -150,22 +192,29 @@ export default function SearchScreen() {
           data={listings}
           renderItem={renderListingItem}
           keyExtractor={(item) => item.id.toString()}
-          numColumns={2}
-          columnWrapperStyle={{ justifyContent: "space-between", paddingHorizontal: 16, gap: 12 }}
-          contentContainerStyle={{ paddingTop: 8, paddingBottom: 20 }}
+          contentContainerStyle={{ 
+            paddingTop: 16, 
+            paddingBottom: 24,
+            backgroundColor: '#FFFFFF' 
+          }}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl 
+              refreshing={refreshing} 
+              onRefresh={onRefresh}
+              tintColor="#11964a"
+            />
           }
           showsVerticalScrollIndicator={false}
+          style={{ backgroundColor: '#FFFFFF' }}
         />
       ) : (
-        <View className="flex-1">
+        <View className="flex-1 bg-white" style={{ backgroundColor: '#FFFFFF' }}>
           <EmptyState
             iconType={searchQuery || hasActiveFilters ? "search" : "package"}
             title={searchQuery || hasActiveFilters ? "No listings found" : "No listings available"}
             message={
               searchQuery || hasActiveFilters
-                ? `We couldn't find any listings matching your search. Try adjusting your filters.`
+                ? `We couldn't find any listings matching your criteria. Try adjusting your filters.`
                 : "There are no listings available at the moment."
             }
           />
@@ -176,30 +225,44 @@ export default function SearchScreen() {
       <BottomSheet
         visible={showFilters}
         onClose={handleCloseFilters}
-        title="Filters"
+        title="Filter Listings"
         footer={
-          <TouchableOpacity
-            onPress={handleCloseFilters}
-            className="bg-primary rounded-2xl shadow-md py-4 items-center"
-          >
-            <Text className="text-white font-semibold text-base">Apply Filters</Text>
-          </TouchableOpacity>
+          <View className="px-6 pb-4">
+            <TouchableOpacity
+              onPress={handleCloseFilters}
+              className="bg-primary rounded-2xl py-4 items-center"
+              style={{
+                shadowColor: "#11964a",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 6,
+              }}
+              activeOpacity={0.9}
+            >
+              <Text className="text-white font-bold text-base">Apply Filters</Text>
+            </TouchableOpacity>
+          </View>
         }
       >
-        <View className="px-6 pt-6">
+        <View className="px-6 pt-4 pb-2">
           {/* Clear all button */}
           {hasActiveFilters && (
-            <TouchableOpacity onPress={clearFilters} className="mb-4">
-              <Text className="text-primary text-sm font-medium">Clear all</Text>
+            <TouchableOpacity 
+              onPress={clearFilters} 
+              className="mb-5 self-start"
+              activeOpacity={0.7}
+            >
+              <Text className="text-primary text-sm font-semibold">Clear all filters</Text>
             </TouchableOpacity>
           )}
 
           {/* Category Filter */}
           <View className="mb-6">
-            <Text className="text-base font-semibold text-gray-900 mb-3">
+            <Text className="text-base font-bold text-gray-900 mb-4">
               Category
             </Text>
-            <View className="flex-row flex-wrap gap-3">
+            <View className="flex-row flex-wrap gap-2">
               {categories.map((category) => (
                 <TouchableOpacity
                   key={category}
@@ -208,9 +271,12 @@ export default function SearchScreen() {
                       selectedCategory === category ? undefined : category
                     )
                   }
-                  className={`px-4 py-2.5 rounded-2xl shadow-md ${
-                    selectedCategory === category ? "bg-primary" : "bg-white"
+                  className={`px-4 py-2.5 rounded-xl border ${
+                    selectedCategory === category 
+                      ? "bg-primary border-primary" 
+                      : "bg-white border-gray-200"
                   }`}
+                  activeOpacity={0.7}
                 >
                   <Text
                     className={`text-sm font-semibold ${
@@ -227,29 +293,31 @@ export default function SearchScreen() {
           </View>
 
           {/* Price Range Filter */}
-          <View>
-            <Text className="text-base font-semibold text-gray-900 mb-3">
-              Price Range
+          <View className="mb-4">
+            <Text className="text-base font-bold text-gray-900 mb-4">
+              Price Range (GHS)
             </Text>
             <View className="flex-row items-center gap-3">
               <View className="flex-1">
-                <Text className="text-xs text-gray-500 mb-2">Min (GHS)</Text>
+                <Text className="text-xs font-medium text-gray-600 mb-2">Minimum</Text>
                 <TextInput
                   value={minPrice}
                   onChangeText={setMinPrice}
                   placeholder="0"
                   keyboardType="numeric"
-                  className="bg-white rounded-2xl shadow-md px-4 py-3 text-gray-900"
+                  className="bg-white rounded-xl border border-gray-200 px-4 py-3 text-gray-900 font-medium"
+                  placeholderTextColor="#9CA3AF"
                 />
               </View>
               <View className="flex-1">
-                <Text className="text-xs text-gray-500 mb-2">Max (GHS)</Text>
+                <Text className="text-xs font-medium text-gray-600 mb-2">Maximum</Text>
                 <TextInput
                   value={maxPrice}
                   onChangeText={setMaxPrice}
                   placeholder="Any"
                   keyboardType="numeric"
-                  className="bg-white rounded-2xl shadow-md px-4 py-3 text-gray-900"
+                  className="bg-white rounded-xl border border-gray-200 px-4 py-3 text-gray-900 font-medium"
+                  placeholderTextColor="#9CA3AF"
                 />
               </View>
             </View>
@@ -259,3 +327,4 @@ export default function SearchScreen() {
     </SafeAreaView>
   );
 }
+

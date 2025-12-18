@@ -6,6 +6,18 @@ import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { LoadingScreen } from "../components/LoadingScreen";
 import "../global.css";
+// Initialize Cognito early
+import "../lib/hooks/auth/cognito";
+import {
+  AuthUserInit,
+  AuthUserProvider,
+  CartSyncProvider,
+  LivestockCategoriesProvider,
+  LivestockProductCategoriesProvider,
+  LocationProvider,
+  OAuthProvider,
+  SavedItemsSyncProvider,
+} from "../lib/providers";
 import { QueryProvider } from "../lib/providers/QueryProvider";
 
 // Keep the splash screen visible while we fetch resources
@@ -54,13 +66,28 @@ export default function RootLayout() {
   return (
     <View className="flex-1 bg-white">
       <QueryProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="login" options={{ headerShown: false }} />
-          <Stack.Screen name="signup" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
+        <AuthUserProvider>
+          <OAuthProvider>
+            <LocationProvider>
+              <LivestockCategoriesProvider>
+                <LivestockProductCategoriesProvider>
+                  <CartSyncProvider>
+                    <SavedItemsSyncProvider>
+                      <AuthUserInit />
+                      <Stack screenOptions={{ headerShown: false }}>
+                        <Stack.Screen name="index" options={{ headerShown: false }} />
+                        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                        <Stack.Screen name="login" options={{ headerShown: false }} />
+                        <Stack.Screen name="signup" options={{ headerShown: false }} />
+                        <Stack.Screen name="+not-found" />
+                      </Stack>
+                    </SavedItemsSyncProvider>
+                  </CartSyncProvider>
+                </LivestockProductCategoriesProvider>
+              </LivestockCategoriesProvider>
+            </LocationProvider>
+          </OAuthProvider>
+        </AuthUserProvider>
       </QueryProvider>
     </View>
   );

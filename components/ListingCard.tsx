@@ -1,4 +1,4 @@
-import { Heart, Sparkles, Users } from "lucide-react-native";
+import { Heart, MapPin, Sparkles, Users } from "lucide-react-native";
 import { useState } from "react";
 import { Image, TouchableOpacity, View } from "react-native";
 import { Listing } from "../lib/types/listing";
@@ -32,7 +32,8 @@ export function ListingCard({
   } = listing;
 
   const displayLocation = farm_location || location;
-  const imageSrc = images?.find((img) => img.is_primary)?.image_url || images?.[0]?.image_url;
+  const imageSrc =
+    images?.find((img) => img.is_primary)?.image_url || images?.[0]?.image_url;
 
   const supportsGroupBuying =
     type === "FULL_ANIMAL" &&
@@ -48,12 +49,12 @@ export function ListingCard({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
-      className="bg-white rounded-2xl shadow-sm overflow-hidden"
-      style={width ? { width, height: 100 } : { flex: 1, height: 100 }}
+      className="bg-white rounded-2xl overflow-hidden"
+      style={width ? { width, height: 180 } : { flex: 1, height: 200 }}
     >
-      <View className="flex-row p-2 h-full">
-        {/* Image */}
-        <View className="w-20 h-full rounded-xl bg-gray-100 mr-3 overflow-hidden">
+      <View className="flex-col h-full">
+        {/* Image Container with Save Button Overlay */}
+        <View className="relative w-full h-32 bg-gray-100 overflow-hidden">
           {imageSrc ? (
             <Image
               source={{ uri: imageSrc }}
@@ -61,53 +62,69 @@ export function ListingCard({
               resizeMode="cover"
             />
           ) : (
-            <View className="w-full h-full items-center justify-center">
-              <Text className="text-gray-400 text-2xl">🐄</Text>
+            <View className="w-full h-full items-center justify-center bg-gray-100">
+              <Text className="text-gray-400 text-4xl">🐄</Text>
+            </View>
+          )}
+
+          {/* Save Button Overlay */}
+          <TouchableOpacity
+            onPress={handleSavePress}
+            className="absolute top-2 right-2 bg-white/90 rounded-full p-2"
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Heart
+              size={18}
+              color={isSaved ? "#EF4444" : "#6B7280"}
+              fill={isSaved ? "#EF4444" : "transparent"}
+            />
+          </TouchableOpacity>
+
+          {/* Badges Overlay on Image */}
+          {(isHandpicked || supportsGroupBuying) && (
+            <View className="absolute top-2 left-2 flex-row gap-1.5">
+              {isHandpicked && (
+                <View className="bg-yellow-500 rounded-full px-2.5 py-1 flex-row items-center gap-1">
+                  <Sparkles size={12} color="#FFFFFF" fill="#FFFFFF" />
+                </View>
+              )}
+              {supportsGroupBuying && (
+                <View className="bg-primary rounded-full px-2.5 py-1 flex-row items-center gap-1">
+                  <Users size={12} color="#FFFFFF" />
+                </View>
+              )}
             </View>
           )}
         </View>
 
         {/* Content */}
-        <View className="flex-1">
-          {/* Title and Save */}
-          <View className="flex-row items-start justify-between mb-1">
-            <Text className="text-sm font-semibold text-gray-900 flex-1" numberOfLines={2}>
+        <View className="flex-1 pt-2 px-2 justify-between">
+          {/* Title and Farm Name */}
+          <View>
+            <Text
+              className="text-base font-semibold text-gray-900"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
               {title}
             </Text>
-            <TouchableOpacity
-              onPress={handleSavePress}
-              className="ml-2"
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Heart
-                size={16}
-                color={isSaved ? "#EF4444" : "#9CA3AF"}
-                fill={isSaved ? "#EF4444" : "transparent"}
-              />
-            </TouchableOpacity>
-          </View>
 
-          {/* Farm Name */}
-          <Text className="text-[9px] text-gray-500 mb-2" numberOfLines={1}>
-            {farmName}
-          </Text>
+            {/* Price */}
+            <View className="flex-row items-center justify-start gap-2">
+              <Text className="text-sm  text-primary">
+                GHS {price ? price.toLocaleString() : "0"}
+              </Text>
 
-          {/* Price and Badges */}
-          <View className="flex-row items-center justify-between">
-            <Text className="text-base font-bold text-primary">
-              GHS {price ? price.toLocaleString() : "0"}
-            </Text>
-            <View className="flex-row items-center gap-1.5">
-              {isHandpicked && (
-                <View className="bg-yellow-100 rounded-full px-2 py-0.5">
-                  <Sparkles size={10} color="#EAB308" fill="#EAB308" />
-                </View>
-              )}
-              {supportsGroupBuying && (
-                <View className="bg-green-100 rounded-full px-2 py-0.5">
-                  <Users size={10} color="#11964a" />
-                </View>
-              )}
+              <View className="flex-row items-center gap-1">
+                <MapPin size={8} color="#6B7280" />
+                <Text
+                  className="text-[8px] text-gray-600 mt-0.5"
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {farmName}
+                </Text>
+              </View>
             </View>
           </View>
         </View>

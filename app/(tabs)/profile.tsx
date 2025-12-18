@@ -1,13 +1,19 @@
-import { ScrollView, View, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Settings } from "lucide-react-native";
-import { Text } from "../../components/ui/Text";
+import { ActivityIndicator, ScrollView, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { LoadingScreen } from "../../components/LoadingScreen";
 import {
   DashboardStats,
-  ProfileMenu,
   LogoutButton,
+  ProfileMenu,
+  UserInfoCard,
 } from "../../components/profile";
+import { Text } from "../../components/ui/Text";
+import { useTokenManager } from "../../lib/hooks/auth/useTokenManager";
+import { useGetCurrentUser } from "../../lib/hooks/useGetCurrentUser";
+import { useHybridSavedFarms } from "../../lib/hooks/useHybridSavedFarms";
+import { useHybridSavedListings } from "../../lib/hooks/useHybridSavedListings";
 import { useListings } from "../../lib/hooks/useListings";
 import { Listing } from "../../lib/types/listing";
 
@@ -24,62 +30,57 @@ interface Order {
 export default function ProfileScreen() {
   const router = useRouter();
   
-  // Mock user data - replace with actual user data from API/context
-  const user = {
-    name: "John Doe",
-  };
-
+  // Get actual user data
+  const { user, loading: userLoading } = useGetCurrentUser();
+  
+  // Get saved items and farms counts
+  const { data: savedListings = [], isLoading: savedListingsLoading } = useHybridSavedListings();
+  const { data: savedFarms = [], isLoading: savedFarmsLoading } = useHybridSavedFarms();
+  
   // Fetch recommended listings
   const { listings } = useListings({ limit: 10 });
 
-  // Mock dashboard stats - replace with actual API data
+  // Get logout function
+  const { logout } = useTokenManager();
+
+  // Calculate dashboard stats from actual data
   const dashboardStats = {
-    totalOrders: 12,
-    savedItems: 8,
-    savedFarms: 5,
+    totalOrders: 0, // TODO: Replace with actual orders API when available
+    savedItems: savedListings.length,
+    savedFarms: savedFarms.length,
   };
 
-  // Mock pending orders - replace with actual API data
-  const pendingOrders: Order[] = [
-    {
-      id: "1",
-      orderNumber: "ORD-2024-003",
-      listingTitle: "Free Range Chickens - Organic",
-      listingImage: "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=800&q=80",
-      farmName: "Happy Hens Farm",
-      totalPrice: 900,
-      status: "pending",
-    },
-    {
-      id: "2",
-      orderNumber: "ORD-2024-004",
-      listingTitle: "Dorper Sheep - Quality Breed",
-      farmName: "Mountain View Farm",
-      totalPrice: 3600,
-      status: "pending",
-    },
-  ];
+  // Mock pending orders - replace with actual API data when available
+  const pendingOrders: Order[] = [];
 
   // Get recommended listings (first 5 from fetched listings)
   const recommendedListings: Listing[] = listings.slice(0, 5);
 
-  const handleLogout = () => {
-    // Handle logout logic here
-    console.log("Logout");
+  const handleLogout = async () => {
+    await logout();
   };
 
-  // Get first name for welcome message
-  const firstName = user.name.split(" ")[0];
+  // Show loading screen while user data is loading
+  if (userLoading) {
+    return <LoadingScreen />;
+  }
+
+  // Get user display name - fallback to email or "User" if name is not available
+  const userName = user?.name || user?.email?.split("@")[0] || "User";
+  const firstName = userName.split(" ")[0];
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>
+    <SafeAreaView className="flex-1 bg-white" style={{ backgroundColor: '#FFFFFF' }} edges={['left', 'right']}>
+      <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false} style={{ backgroundColor: '#FFFFFF' }}>
         {/* Header with Welcome and Settings */}
-        <View className="bg-white px-4 pt-6 pb-4 border-b border-gray-100">
+        <View className="bg-white px-5 pt-2 pb-3 border-b border-gray-100" style={{ backgroundColor: '#FFFFFF' }}>
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
-              <Text className="text-2xl font-bold text-gray-900">
+              <Text className="text-xl font-bold text-gray-900" variant="bold">
                 Welcome back, {firstName}
+              </Text>
+              <Text className="text-xs text-gray-600 mt-1">
+                {user?.email || "N/A"}
               </Text>
             </View>
             <TouchableOpacity
@@ -91,14 +92,30 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* User Info Card - Always show with N/A for missing fields */}
+        <View className="mt-4">
+          <UserInfoCard
+            email={user?.email || "N/A"}
+            phone={user?.phone || "N/A"}
+            location="N/A" // TODO: Add location to user model if available
+          />
+        </View>
+
         {/* Dashboard Stats */}
-        <DashboardStats
-          totalOrders={dashboardStats.totalOrders}
-          savedItems={dashboardStats.savedItems}
-          savedFarms={dashboardStats.savedFarms}
-          pendingOrders={pendingOrders}
-          recommendedListings={recommendedListings}
-        />
+        {(savedListingsLoading || savedFarmsLoading) ? (
+          <View className="mx-4 mt-4 items-center py-8">
+            <ActivityIndicator size="large" color="#11964a" />
+            <Text className="text-gray-600 mt-4">Loading dashboard...</Text>
+          </View>
+        ) : (
+          <DashboardStats
+            totalOrders={dashboardStats.totalOrders}
+            savedItems={dashboardStats.savedItems}
+            savedFarms={dashboardStats.savedFarms}
+            pendingOrders={pendingOrders}
+            recommendedListings={recommendedListings}
+          />
+        )}
 
         {/* Menu Items */}
         <ProfileMenu />

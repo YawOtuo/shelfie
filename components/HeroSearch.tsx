@@ -1,8 +1,40 @@
+import { cva, type VariantProps } from "class-variance-authority";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { Search, SlidersHorizontal } from "lucide-react-native";
+import { SlidersHorizontal } from "lucide-react-native";
 import React from "react";
-import { ScrollView, TextInput, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
+import Svg, { Path } from "react-native-svg";
+import { SearchBar } from "./SearchBar";
 import { Text } from "./ui/Text";
+
+const categoryCardVariants = cva(
+  "bg-white rounded-2xl flex-col items-center justify-center shadow-sm border border-gray-100",
+  {
+    variants: {
+      size: {
+        sm: "px-4 py-3 min-w-[90px]",
+        md: "px-5 py-4 min-w-[100px]",
+        lg: "px-6 py-5 min-w-[110px]",
+      },
+      variant: {
+        default: "bg-white border-gray-100",
+        elevated: "bg-white border-gray-100 shadow-md",
+        outlined: "bg-transparent border-2 border-primary",
+      },
+    },
+    defaultVariants: {
+      size: "md",
+      variant: "default",
+    },
+  }
+);
+
+const categoryIconSizes = {
+  sm: 24,
+  md: 32,
+  lg: 40,
+};
 
 interface HeroSearchProps {
   searchQuery: string;
@@ -10,14 +42,16 @@ interface HeroSearchProps {
   onSearchPress?: () => void;
   onFiltersPress?: () => void;
   placeholder?: string;
+  categorySize?: VariantProps<typeof categoryCardVariants>["size"];
+  categoryVariant?: VariantProps<typeof categoryCardVariants>["variant"];
 }
 
 const categories = [
-  { name: "Cattle", value: "cattle", emoji: "🐄" },
-  { name: "Goats", value: "goats", emoji: "🐐" },
-  { name: "Sheep", value: "sheep", emoji: "🐑" },
-  { name: "Poultry", value: "poultry", emoji: "🐔" },
-  { name: "Pigs", value: "pigs", emoji: "🐷" },
+  { name: "Cattle", value: "cattle", icon: "hamburger" },
+  { name: "Goats", value: "goats", icon: "hamburger" },
+  { name: "Sheep", value: "sheep", icon: "hamburger" },
+  { name: "Poultry", value: "poultry", icon: "drumstick-bite" },
+  { name: "Pigs", value: "pigs", icon: "bacon" },
 ];
 
 export function HeroSearch({
@@ -26,6 +60,8 @@ export function HeroSearch({
   onSearchPress,
   onFiltersPress,
   placeholder = "Search for livestock...",
+  categorySize = "md",
+  categoryVariant = "default",
 }: HeroSearchProps) {
   const router = useRouter();
 
@@ -37,59 +73,83 @@ export function HeroSearch({
   };
 
   return (
-    <View className="bg-white pb-6">
-      <View className="px-5 pt-6">
+    <View className="relative pb-10 overflow-hidden">
+      <LinearGradient
+        colors={["#fffbeb33","#fffbeb33","#fffbeb33"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        className="absolute inset-0"
+      />
+      <View className="pr-16 pl-10 pt-20">
         {/* Header Text */}
-        <View className="mb-5">
-          <Text className="text-2xl font-bold text-primary leading-tight">
-            Find the perfect livestock/meat for your needs
+        <View className="mb-5 ">
+          <Text className=" text-primary  font-semibold text-2xl   leading-tight">
+            Find the perfect <Text className="text-primary-dark font-semibold text-2xl">livestock/meat</Text> for your needs.
           </Text>
         </View>
 
         {/* Search Bar with White Background and Shadow */}
-        <TouchableOpacity
-          className="bg-white rounded-2xl shadow-md flex-row items-center px-4 py-3.5 mb-4"
-          activeOpacity={1}
-        >
-          <Search size={20} color="#6B7280" />
-          <TextInput
+        <View className="flex-row items-center gap-2 mb-4">
+          <SearchBar
             value={searchQuery}
             onChangeText={onSearchChange}
+            onPress={onSearchPress}
             placeholder={placeholder}
-            placeholderTextColor="#9CA3AF"
-            className="flex-1 ml-3 text-base text-gray-900"
+            variant="hero"
             editable={true}
-            returnKeyType="search"
           />
           <TouchableOpacity
             onPress={onFiltersPress}
-            className="ml-2 p-2"
+            className="p-3 bg-white rounded-2xl shadow-md"
             activeOpacity={0.7}
           >
             <SlidersHorizontal size={20} color="#11964a" />
           </TouchableOpacity>
-        </TouchableOpacity>
+        </View>
 
         {/* Category Tabs */}
-        <ScrollView
+        {/* <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingRight: 20, gap: 8 }}
+          contentContainerStyle={{ paddingRight: 20, gap: 12 }}
         >
           {categories.map((category) => (
             <TouchableOpacity
               key={category.value}
               onPress={() => handleCategoryPress(category.value)}
-              className="bg-white rounded-full px-4 py-2.5 flex-row items-center gap-2 shadow-sm"
+              className={cn(categoryCardVariants({ size: categorySize, variant: categoryVariant }))}
               activeOpacity={0.7}
             >
-              <Text className="text-base">{category.emoji}</Text>
-              <Text className="text-sm font-medium text-gray-900">
+              <View className="mb-2">
+                <FontAwesome5 
+                  name={category.icon} 
+                  size={categoryIconSizes[categorySize || "md"]} 
+                  color="#11964a" 
+                />
+              </View>
+              <Text 
+                className={cn(
+                  "font-semibold text-gray-900",
+                  categorySize === "sm" && "text-sm",
+                  categorySize === "md" && "text-base",
+                  categorySize === "lg" && "text-lg"
+                )} 
+                variant="semibold"
+              >
                 {category.name}
               </Text>
             </TouchableOpacity>
           ))}
-        </ScrollView>
+        </ScrollView> */}
+      </View>
+      {/* Wavy Bottom Edge */}
+      <View className="absolute bottom-0 left-0 right-0" style={{ height: 40 }}>
+        <Svg width="100%" height="40" viewBox="0 0 100 40" preserveAspectRatio="none">
+          <Path
+            d="M0,40 Q25,30 50,35 T100,35 L100,40 Z"
+            fill="#ffffff"
+          />
+        </Svg>
       </View>
     </View>
   );

@@ -1,12 +1,13 @@
 import { useRouter } from "expo-router";
 import { User, Mail, Lock } from "lucide-react-native";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Text } from "../components/ui/Text";
+import { useBuyerSignup } from "../lib/hooks/auth/useBuyerSignup";
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -14,27 +15,40 @@ export default function SignUpScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { registerWithEmailAndPassword, loading, errorText } = useBuyerSignup();
 
   const handleSignUp = async () => {
     // Simple validation
     if (!name || !email || !password || !confirmPassword) {
+      Alert.alert("Validation Error", "Please fill in all fields");
       return;
     }
 
     if (password !== confirmPassword) {
+      Alert.alert("Validation Error", "Passwords do not match");
       return;
     }
 
-    setLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Navigate to home screen
-    router.replace("/(tabs)");
-    
-    setLoading(false);
+    if (password.length < 8) {
+      Alert.alert("Validation Error", "Password must be at least 8 characters long");
+      return;
+    }
+
+    try {
+      await registerWithEmailAndPassword({
+        email,
+        password,
+        username: name,
+        options: {
+          redirect: true,
+        },
+      });
+      // Navigation is handled by useTokenManager
+    } catch (error: any) {
+      // Error is already handled by the hook and displayed via errorText
+      // You can add additional error handling here if needed
+      console.error("Signup error:", error);
+    }
   };
 
   return (
@@ -123,11 +137,18 @@ export default function SignUpScreen() {
                 </View>
               </View>
 
+              {/* Error Message */}
+              {errorText && (
+                <View className="mb-4 p-3 bg-red-50 rounded-lg border border-red-200">
+                  <Text className="text-red-600 text-sm text-center">{errorText}</Text>
+                </View>
+              )}
+
               {/* Sign Up Button */}
               <Button
                 onPress={handleSignUp}
                 loading={loading}
-                disabled={!name || !email || !password || !confirmPassword || password !== confirmPassword}
+                disabled={!name || !email || !password || !confirmPassword || password !== confirmPassword || loading}
                 className="mb-4"
                 size="lg"
               >

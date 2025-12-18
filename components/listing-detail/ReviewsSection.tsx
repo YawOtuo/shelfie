@@ -22,30 +22,32 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
       : 0;
 
   return (
-    <View className="px-4 py-4 bg-white mx-4 my-3 rounded-xl shadow-sm border border-gray-100">
-      <View className="flex-row items-center justify-between mb-3">
-        <View className="flex-row items-center gap-2.5">
-          <Star size={20} color="#EAB308" fill="#EAB308" />
-          <View>
-            <Text className="text-lg font-bold text-gray-900">
-              {averageRating.toFixed(1)}
-            </Text>
-            <Text className="text-xs text-gray-600">
-              {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
-            </Text>
-          </View>
+    <View className="bg-white px-5 py-6 border-t border-gray-100" style={{ backgroundColor: '#FFFFFF' }}>
+      <View className="flex-row items-center justify-between mb-5">
+        <View>
+          <Text className="text-lg font-bold text-gray-900 mb-1">
+            Reviews & Ratings
+          </Text>
+          {reviews.length > 0 && (
+            <View className="flex-row items-center gap-2">
+              <Star size={16} color="#EAB308" fill="#EAB308" strokeWidth={2} />
+              <Text className="text-sm text-gray-600">
+                {averageRating.toFixed(1)} • {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+              </Text>
+            </View>
+          )}
         </View>
       </View>
       {reviews.length > 0 ? (
-        <View>
+        <View className="gap-3">
           {reviews.map((review) => (
             <ReviewCard key={review.id} review={review} />
           ))}
         </View>
       ) : (
-        <View className="py-6 items-center">
+        <View className="py-8 items-center">
           <Star size={40} color="#D1D5DB" />
-          <Text className="text-gray-500 text-sm mt-2">No reviews yet</Text>
+          <Text className="text-gray-500 text-sm mt-3 font-medium">No reviews yet</Text>
           <Text className="text-gray-400 text-xs mt-1">
             Be the first to review this listing
           </Text>

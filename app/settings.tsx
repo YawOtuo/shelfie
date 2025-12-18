@@ -21,6 +21,8 @@ import { Text } from "../components/ui/Text";
 import { Card } from "../components/ui/Card";
 import { DetailHeader } from "../components/DetailHeader";
 import { Button } from "../components/ui/Button";
+import { useGetCurrentUser } from "../lib/hooks/useGetCurrentUser";
+import { LoadingScreen } from "../components/LoadingScreen";
 
 interface SettingItem {
   icon: React.ComponentType<{ color: string; size: number }>;
@@ -37,13 +39,13 @@ export default function SettingsScreen() {
   const [darkMode, setDarkMode] = useState(false);
   const [locationServices, setLocationServices] = useState(true);
 
-  // Mock user data - replace with actual user data from API/context
-  const user = {
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    location: "New York, USA",
-  };
+  // Get actual user data
+  const { user, loading: userLoading } = useGetCurrentUser();
+
+  // Show loading screen while user data is loading
+  if (userLoading) {
+    return <LoadingScreen />;
+  }
 
   const handleEditContact = () => {
     Alert.alert("Edit Contact", "Edit contact information coming soon!");
@@ -257,16 +259,20 @@ export default function SettingsScreen() {
               <View className="flex-col">
                 <View className="flex-row items-center mb-3">
                   <Mail color="#6B7280" size={18} />
-                  <Text className="ml-3 text-gray-700 flex-1">{user.email}</Text>
+                  <Text className="ml-3 text-gray-700 flex-1">
+                    {user?.email || "N/A"}
+                  </Text>
                 </View>
                 <View className="flex-row items-center mb-3">
                   <Phone color="#6B7280" size={18} />
-                  <Text className="ml-3 text-gray-700 flex-1">{user.phone}</Text>
+                  <Text className="ml-3 text-gray-700 flex-1">
+                    {user?.phone || "N/A"}
+                  </Text>
                 </View>
                 <View className="flex-row items-center">
                   <MapPin color="#6B7280" size={18} />
                   <Text className="ml-3 text-gray-700 flex-1">
-                    {user.location}
+                    N/A
                   </Text>
                 </View>
               </View>

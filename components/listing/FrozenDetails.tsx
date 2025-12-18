@@ -1,10 +1,66 @@
 import { View } from "react-native";
 import { Text } from "../ui/Text";
-import { Scale, Package, Calendar, Award, Snowflake } from "lucide-react-native";
+import { Scale, Package, Calendar, Award, Snowflake, Scissors } from "lucide-react-native";
 import { FrozenListing } from "../../lib/types/listing";
 
 interface FrozenDetailsProps {
   details: FrozenListing;
+}
+
+interface DetailCardProps {
+  icon: React.ComponentType<any>;
+  label: string;
+  value: string | number | null | undefined;
+  unit?: string;
+}
+
+function DetailCard({ icon: Icon, label, value, unit }: DetailCardProps) {
+  const hasValue = value !== undefined && value !== null && value !== "";
+  
+  return (
+    <View 
+      className="w-[48%] bg-white rounded-xl p-4 border border-gray-100"
+      style={{ backgroundColor: '#FFFFFF' }}
+    >
+      <View className="flex-row items-center gap-2 mb-2">
+        <Icon size={14} color="#6B7280" strokeWidth={2} />
+        <Text className="text-xs text-gray-500 font-medium">
+          {label}
+        </Text>
+      </View>
+      {hasValue ? (
+        <Text className="text-lg font-bold text-gray-900 capitalize">
+          {value}{unit ? ` ${unit}` : ""}
+        </Text>
+      ) : (
+        <Text className="text-sm font-medium text-gray-400">Not specified</Text>
+      )}
+    </View>
+  );
+}
+
+interface DetailSectionProps {
+  icon: React.ComponentType<any>;
+  label: string;
+  value: string | null | undefined;
+}
+
+function DetailSection({ icon: Icon, label, value }: DetailSectionProps) {
+  const hasValue = value && value.trim() !== "";
+  
+  return (
+    <View className="bg-white rounded-xl p-4 border border-gray-100" style={{ backgroundColor: '#FFFFFF' }}>
+      <View className="flex-row items-center gap-2 mb-2">
+        <Icon size={14} color="#6B7280" strokeWidth={2} />
+        <Text className="text-sm font-semibold text-gray-900">{label}</Text>
+      </View>
+      {hasValue ? (
+        <Text className="text-sm text-gray-700 leading-5">{value}</Text>
+      ) : (
+        <Text className="text-sm text-gray-400">Not specified</Text>
+      )}
+    </View>
+  );
 }
 
 export function FrozenDetails({ details }: FrozenDetailsProps) {
@@ -19,98 +75,40 @@ export function FrozenDetails({ details }: FrozenDetailsProps) {
   } = details;
 
   return (
-    <View className="px-4 py-4">
-      <Text className="text-lg font-bold text-gray-900 mb-4">Frozen Product Details</Text>
-      <View className="flex-row flex-wrap gap-3">
-        <View className="w-[48%] bg-white rounded-xl p-4 shadow-sm">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Scale size={18} color="#11964a" />
-            <Text className="text-xs text-gray-500 uppercase tracking-wide">Weight</Text>
-          </View>
-          {weight ? (
-            <Text className="text-base font-semibold text-gray-900">
-              {weight} kg
-            </Text>
-          ) : (
-            <Text className="text-base font-semibold text-gray-400">N/A</Text>
-          )}
-        </View>
-        <View className="flex-1 min-w-[140px] bg-white rounded-xl p-4 shadow-sm">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Package size={18} color="#11964a" />
-            <Text className="text-xs text-gray-500 uppercase tracking-wide">Cut Type</Text>
-          </View>
-          {cut_type ? (
-            <Text className="text-base font-semibold text-gray-900 capitalize">
-              {cut_type}
-            </Text>
-          ) : (
-            <Text className="text-base font-semibold text-gray-400">N/A</Text>
-          )}
-        </View>
-        <View className="flex-1 min-w-[140px] bg-white rounded-xl p-4 shadow-sm">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Package size={18} color="#11964a" />
-            <Text className="text-xs text-gray-500 uppercase tracking-wide">Packaging</Text>
-          </View>
-          {packaging_type ? (
-            <Text className="text-base font-semibold text-gray-900 capitalize">
-              {packaging_type}
-            </Text>
-          ) : (
-            <Text className="text-base font-semibold text-gray-400">N/A</Text>
-          )}
-        </View>
-        <View className="flex-1 min-w-[140px] bg-white rounded-xl p-4 shadow-sm">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Calendar size={18} color="#11964a" />
-            <Text className="text-xs text-gray-500 uppercase tracking-wide">Shelf Life</Text>
-          </View>
-          {shelf_life ? (
-            <Text className="text-base font-semibold text-gray-900">
-              {shelf_life}
-            </Text>
-          ) : (
-            <Text className="text-base font-semibold text-gray-400">N/A</Text>
-          )}
+    <View className="bg-white px-5 py-6 border-t border-gray-100" style={{ backgroundColor: '#FFFFFF' }}>
+      {/* Header */}
+      <View className="mb-5">
+        <Text className="text-lg font-bold text-gray-900 mb-1">Frozen Product Details</Text>
+        <Text className="text-xs text-gray-500">Product specifications and storage information</Text>
+      </View>
+
+      {/* Primary Information Grid */}
+      <View className="mb-5">
+        <View className="flex-row flex-wrap gap-3">
+          <DetailCard icon={Scale} label="Weight" value={weight} unit="kg" />
+          <DetailCard icon={Scissors} label="Cut Type" value={cut_type} />
+          <DetailCard icon={Package} label="Packaging" value={packaging_type} />
+          <DetailCard icon={Calendar} label="Shelf Life" value={shelf_life} />
         </View>
       </View>
 
-      <View className="mt-4">
-        <View className="bg-white rounded-xl p-4 shadow-sm mb-3">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Snowflake size={18} color="#11964a" />
-            <Text className="text-sm font-semibold text-gray-900">Storage Instructions</Text>
+      {/* Storage & Certification Details */}
+      {(storage_instructions || processing_date || certification) && (
+        <View className="pt-5 border-t border-gray-100">
+          <Text className="text-sm font-semibold text-gray-700 mb-3">Storage & Certification</Text>
+          <View className="gap-3">
+            {storage_instructions && (
+              <DetailSection icon={Snowflake} label="Storage Instructions" value={storage_instructions} />
+            )}
+            {processing_date && (
+              <DetailSection icon={Calendar} label="Processing Date" value={processing_date} />
+            )}
+            {certification && (
+              <DetailSection icon={Award} label="Certification" value={certification} />
+            )}
           </View>
-          {storage_instructions ? (
-            <Text className="text-sm text-gray-700">{storage_instructions}</Text>
-          ) : (
-            <Text className="text-sm text-gray-400">N/A</Text>
-          )}
         </View>
-        <View className="bg-white rounded-xl p-4 shadow-sm mb-3">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Calendar size={18} color="#11964a" />
-            <Text className="text-sm font-semibold text-gray-900">Processing Date</Text>
-          </View>
-          {processing_date ? (
-            <Text className="text-sm text-gray-700">{processing_date}</Text>
-          ) : (
-            <Text className="text-sm text-gray-400">N/A</Text>
-          )}
-        </View>
-        <View className="bg-white rounded-xl p-4 shadow-sm mb-3">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Award size={18} color="#11964a" />
-            <Text className="text-sm font-semibold text-gray-900">Certification</Text>
-          </View>
-          {certification ? (
-            <Text className="text-sm text-gray-700">{certification}</Text>
-          ) : (
-            <Text className="text-sm text-gray-400">N/A</Text>
-          )}
-        </View>
-      </View>
+      )}
     </View>
   );
 }

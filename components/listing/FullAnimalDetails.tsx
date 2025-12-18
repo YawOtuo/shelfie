@@ -1,164 +1,112 @@
+import { Calendar, Heart, Info, Scale, Sparkles, Syringe, Users, Utensils } from "lucide-react-native";
 import { View } from "react-native";
-import { Text } from "../ui/Text";
-import { Info, Scale, Calendar, Users, Heart, Syringe, Utensils } from "lucide-react-native";
 import { FullAnimalListing } from "../../lib/types/listing";
+import { Text } from "../ui/Text";
 
 interface FullAnimalDetailsProps {
   details: FullAnimalListing;
   breed?: string;
 }
 
+interface DetailCardProps {
+  icon: React.ComponentType<any>;
+  label: string;
+  value: string | number | null | undefined;
+  unit?: string;
+  fullWidth?: boolean;
+}
+
+function DetailCard({ icon: Icon, label, value, unit, fullWidth = false }: DetailCardProps) {
+  const hasValue = value !== undefined && value !== null && value !== "";
+  
+  return (
+    <View 
+      className={`${fullWidth ? 'w-full' : 'w-[48%]'} bg-white rounded-xl p-4 border border-gray-100`}
+      style={{ backgroundColor: '#FFFFFF' }}
+    >
+      <View className="flex-row items-center gap-2 mb-2">
+        <Icon size={14} color="#6B7280" strokeWidth={2} />
+        <Text className="text-xs text-gray-500 font-medium">
+          {label}
+        </Text>
+      </View>
+      {hasValue ? (
+        <Text className="text-lg font-bold text-gray-900">
+          {value}{unit ? ` ${unit}` : ""}
+        </Text>
+      ) : (
+        <Text className="text-sm font-medium text-gray-400">Not specified</Text>
+      )}
+    </View>
+  );
+}
+
+interface DetailSectionProps {
+  icon: React.ComponentType<any>;
+  label: string;
+  value: string | null | undefined;
+}
+
+function DetailSection({ icon: Icon, label, value }: DetailSectionProps) {
+  const hasValue = value && value.trim() !== "";
+  
+  return (
+    <View className="bg-white rounded-xl p-4 border border-gray-100" style={{ backgroundColor: '#FFFFFF' }}>
+      <View className="flex-row items-center gap-2 mb-2">
+        <Icon size={14} color="#6B7280" strokeWidth={2} />
+        <Text className="text-sm font-semibold text-gray-900">{label}</Text>
+      </View>
+      {hasValue ? (
+        <Text className="text-sm text-gray-700 leading-5">{value}</Text>
+      ) : (
+        <Text className="text-sm text-gray-400">Not specified</Text>
+      )}
+    </View>
+  );
+}
+
 export function FullAnimalDetails({ details, breed }: FullAnimalDetailsProps) {
   const { age, weight, gender, health_status, vaccination_history, feeding_history, special_characteristics, quantity } = details;
 
   return (
-    <View className="px-4 py-4">
-      <Text className="text-lg font-bold text-gray-900 mb-4">Animal Details</Text>
-      
-      {/* 2x2 Grid for main details */}
-      <View className="flex-row flex-wrap gap-3 mb-4">
-        {/* Quantity */}
-        <View className="w-[48%] bg-white rounded-xl p-4 shadow-sm">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Users size={18} color="#11964a" />
-            <Text className="text-xs text-gray-500 uppercase tracking-wide">Quantity</Text>
-          </View>
-          {quantity !== undefined && quantity !== null ? (
-            <Text className="text-base font-semibold text-gray-900">
-              {quantity}
-            </Text>
-          ) : (
-            <Text className="text-base font-semibold text-gray-400">N/A</Text>
-          )}
-        </View>
-
-        {/* Weight */}
-        <View className="w-[48%] bg-white rounded-xl p-4 shadow-sm">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Scale size={18} color="#11964a" />
-            <Text className="text-xs text-gray-500 uppercase tracking-wide">Weight</Text>
-          </View>
-          {weight !== undefined && weight > 0 ? (
-            <Text className="text-base font-semibold text-gray-900">
-              {weight} kg
-            </Text>
-          ) : (
-            <Text className="text-base font-semibold text-gray-400">N/A</Text>
-          )}
-        </View>
-
-        {/* Age */}
-        <View className="w-[48%] bg-white rounded-xl p-4 shadow-sm">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Calendar size={18} color="#11964a" />
-            <Text className="text-xs text-gray-500 uppercase tracking-wide">Age</Text>
-          </View>
-          {age !== undefined && age !== null ? (
-            <Text className="text-base font-semibold text-gray-900">
-              {age} months
-            </Text>
-          ) : (
-            <Text className="text-base font-semibold text-gray-400">N/A</Text>
-          )}
-        </View>
-
-        {/* Breed */}
-        <View className="w-[48%] bg-white rounded-xl p-4 shadow-sm">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Info size={18} color="#11964a" />
-            <Text className="text-xs text-gray-500 uppercase tracking-wide">Breed</Text>
-          </View>
-          {breed ? (
-            <Text className="text-base font-semibold text-gray-900 capitalize" numberOfLines={2}>
-              {breed}
-            </Text>
-          ) : (
-            <Text className="text-base font-semibold text-gray-400">N/A</Text>
-          )}
-        </View>
+    <View className="bg-white px-5 py-6 border-t border-gray-100" style={{ backgroundColor: '#FFFFFF' }}>
+      {/* Header */}
+      <View className="mb-5">
+        <Text className="text-lg font-bold text-gray-900 mb-1">Animal Details</Text>
+        <Text className="text-xs text-gray-500">Comprehensive information about the livestock</Text>
       </View>
 
-      {/* Gender */}
-      <View className="flex-row flex-wrap gap-3 mb-4">
-        <View className="w-[48%] bg-white rounded-xl p-4 shadow-sm">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Users size={18} color="#11964a" />
-            <Text className="text-xs text-gray-500 uppercase tracking-wide">Gender</Text>
-          </View>
-          {gender ? (
-            <Text className="text-base font-semibold text-gray-900 capitalize">
-              {gender.toLowerCase()}
-            </Text>
-          ) : (
-            <Text className="text-base font-semibold text-gray-400">N/A</Text>
-          )}
-        </View>
-      </View>
-
-      {/* Health & History Details in 2x2 Grid */}
-      <View className="mt-4">
+      {/* Primary Information Grid */}
+      <View className="mb-5">
         <View className="flex-row flex-wrap gap-3">
-          {/* Health Status */}
-          <View className="w-[48%] bg-white rounded-xl p-4 shadow-sm">
-            <View className="flex-row items-center gap-2 mb-2">
-              <Heart size={18} color="#11964a" />
-              <Text className="text-xs text-gray-500 uppercase tracking-wide">Health Status</Text>
-            </View>
-            {health_status ? (
-              <Text className="text-sm font-semibold text-gray-900" numberOfLines={3}>
-                {health_status}
-              </Text>
-            ) : (
-              <Text className="text-sm font-semibold text-gray-400">N/A</Text>
-            )}
-          </View>
+          <DetailCard icon={Users} label="Quantity" value={quantity} />
+          <DetailCard icon={Scale} label="Weight" value={weight} unit="kg" />
+          <DetailCard icon={Calendar} label="Age" value={age} unit="months" />
+          <DetailCard icon={Info} label="Breed" value={breed} />
+          <DetailCard icon={Users} label="Gender" value={gender ? gender.toLowerCase() : null} />
+        </View>
+      </View>
 
-          {/* Vaccination History */}
-          <View className="w-[48%] bg-white rounded-xl p-4 shadow-sm">
-            <View className="flex-row items-center gap-2 mb-2">
-              <Syringe size={18} color="#11964a" />
-              <Text className="text-xs text-gray-500 uppercase tracking-wide">Vaccination</Text>
-            </View>
-            {vaccination_history ? (
-              <Text className="text-sm font-semibold text-gray-900" numberOfLines={3}>
-                {vaccination_history}
-              </Text>
-            ) : (
-              <Text className="text-sm font-semibold text-gray-400">N/A</Text>
+      {/* Health & Care Information */}
+      {(health_status || vaccination_history || feeding_history || special_characteristics) && (
+        <View className="pt-5 border-t border-gray-100">
+          <Text className="text-sm font-semibold text-gray-700 mb-3">Health & Care</Text>
+          <View className="gap-3">
+            {health_status && (
+              <DetailSection icon={Heart} label="Health Status" value={health_status} />
             )}
-          </View>
-
-          {/* Feeding History */}
-          <View className="w-[48%] bg-white rounded-xl p-4 shadow-sm">
-            <View className="flex-row items-center gap-2 mb-2">
-              <Utensils size={18} color="#11964a" />
-              <Text className="text-xs text-gray-500 uppercase tracking-wide">Feeding</Text>
-            </View>
-            {feeding_history ? (
-              <Text className="text-sm font-semibold text-gray-900" numberOfLines={3}>
-                {feeding_history}
-              </Text>
-            ) : (
-              <Text className="text-sm font-semibold text-gray-400">N/A</Text>
+            {vaccination_history && (
+              <DetailSection icon={Syringe} label="Vaccination History" value={vaccination_history} />
             )}
-          </View>
-
-          {/* Special Characteristics */}
-          <View className="w-[48%] bg-white rounded-xl p-4 shadow-sm">
-            <View className="flex-row items-center gap-2 mb-2">
-              <Info size={18} color="#11964a" />
-              <Text className="text-xs text-gray-500 uppercase tracking-wide">Special</Text>
-            </View>
-            {special_characteristics ? (
-              <Text className="text-sm font-semibold text-gray-900" numberOfLines={3}>
-                {special_characteristics}
-              </Text>
-            ) : (
-              <Text className="text-sm font-semibold text-gray-400">N/A</Text>
+            {feeding_history && (
+              <DetailSection icon={Utensils} label="Feeding History" value={feeding_history} />
+            )}
+            {special_characteristics && (
+              <DetailSection icon={Sparkles} label="Special Characteristics" value={special_characteristics} />
             )}
           </View>
         </View>
-      </View>
+      )}
     </View>
   );
 }

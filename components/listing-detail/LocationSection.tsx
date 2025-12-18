@@ -9,13 +9,15 @@ interface LocationSectionProps {
 
 export function LocationSection({ displayLocation }: LocationSectionProps) {
   return (
-    <View className="px-4 py-4 bg-white mx-4 my-3 rounded-xl shadow-sm border border-gray-100">
-      <View className="flex-row items-center gap-2 mb-3">
-        <MapPin size={18} color="#11964a" />
+    <View className="bg-white px-5 py-6 border-t border-gray-100" style={{ backgroundColor: '#FFFFFF' }}>
+      <View className="flex-row items-center gap-2 mb-4">
+        <MapPin size={18} color="#11964a" strokeWidth={2.5} />
         <Text className="text-lg font-bold text-gray-900">Location</Text>
       </View>
-      <Text className="text-sm text-gray-700 mb-3">{displayLocation}</Text>
-      <LocationMap location={displayLocation} />
+      <Text className="text-sm text-gray-700 mb-4">{displayLocation}</Text>
+      <View className="rounded-2xl overflow-hidden">
+        <LocationMap location={displayLocation} />
+      </View>
     </View>
   );
 }

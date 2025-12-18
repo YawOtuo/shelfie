@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { FlatList, View } from "react-native";
-import { useClosestFarms, useNewestFarms, useTopRatedFarms } from "../lib/hooks/useFarms";
+import { useGetClosestFarms, useGetNewestFarms, useGetTopRatedFarms } from "../lib/hooks/useFarms";
 import { Farm } from "../lib/types/farm";
-import { FarmCard } from "./FarmCard";
+import { FarmCardV3 } from "./FarmCardV3";
 import { EmptyState } from "./ui/EmptyState";
 import { LoadingSpinner } from "./ui/LoadingSpinner";
 import { Tabs } from "./ui/Tabs";
@@ -26,17 +26,17 @@ export function FeaturedFarmsSection({
   const [activeTab, setActiveTab] = useState<string>("closest");
 
   // Fetch farms based on active tab
-  const { farms: closestFarms, isLoading: loadingClosest, error: errorClosest } = useClosestFarms({
+  const { data: closestFarms = [], isLoading: loadingClosest, error: errorClosest } = useGetClosestFarms({
     limit: 10,
     search_query: searchQuery.trim() || undefined,
   });
 
-  const { farms: newestFarms, isLoading: loadingNewest, error: errorNewest } = useNewestFarms({
+  const { data: newestFarms = [], isLoading: loadingNewest, error: errorNewest } = useGetNewestFarms({
     limit: 10,
     search_query: searchQuery.trim() || undefined,
   });
 
-  const { farms: topRatedFarms, isLoading: loadingTopRated, error: errorTopRated } = useTopRatedFarms({
+  const { data: topRatedFarms = [], isLoading: loadingTopRated, error: errorTopRated } = useGetTopRatedFarms({
     limit: 10,
     search_query: searchQuery.trim() || undefined,
   });
@@ -45,38 +45,32 @@ export function FeaturedFarmsSection({
   const getCurrentFarms = () => {
     switch (activeTab) {
       case "closest":
-        return { farms: closestFarms, isLoading: loadingClosest, error: errorClosest };
+        return { farms: closestFarms || [], isLoading: loadingClosest, error: errorClosest };
       case "newest":
-        return { farms: newestFarms, isLoading: loadingNewest, error: errorNewest };
+        return { farms: newestFarms || [], isLoading: loadingNewest, error: errorNewest };
       case "top-rated":
-        return { farms: topRatedFarms, isLoading: loadingTopRated, error: errorTopRated };
+        return { farms: topRatedFarms || []   , isLoading: loadingTopRated, error: errorTopRated };
       default:
-        return { farms: closestFarms, isLoading: loadingClosest, error: errorClosest };
+        return { farms: closestFarms || [], isLoading: loadingClosest, error: errorClosest };
     }
   };
 
-  const { farms, isLoading, error } = getCurrentFarms();
+  const { farms = [], isLoading, error } = getCurrentFarms();
   const renderFarmItem = ({ item }: { item: Farm }) => (
     <View className="mr-4 pb-4">
-      <FarmCard
+      <FarmCardV3
         farm={item}
         onPress={() => onFarmPress(item.id)}
-        width={200}
       />
     </View>
   );
 
   return (
-    <View className="mt-6">
-      <View className="px-4 mb-3 flex-row items-center justify-between">
-        <Text className="text-xl text-primary-dark" variant="bold">
+    <View className="mt-4">
+      <View className="px-4 mb-3">
+        <Text className="text-base text-primary-dark" variant="medium">
           Featured Farms
         </Text>
-        {farms.length > 0 && (
-          <Text className="text-sm text-gray-500">
-            {farms.length} {farms.length === 1 ? "farm" : "farms"}
-          </Text>
-        )}
       </View>
 
       {/* Farm Tabs */}
@@ -96,15 +90,24 @@ export function FeaturedFarmsSection({
             Error loading farms.
           </Text>
         </View>
-      ) : farms.length > 0 ? (
-        <FlatList
-          data={farms}
-          renderItem={renderFarmItem}
-          keyExtractor={(item) => item.id.toString()}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
-        />
+      ) : (farms || []).length > 0 ? (
+        <>
+          <FlatList
+            data={farms || []}
+            renderItem={renderFarmItem}
+            keyExtractor={(item) => item.id.toString()}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 16 }}
+          />
+          {(farms || []).length > 0 && (
+            <View className="px-4 pb-2">
+              <Text className="text-sm text-gray-500 text-right">
+                {(farms || []).length} {(farms || []).length === 1 ? "farm" : "farms"}
+              </Text>
+            </View>
+          )}
+        </>
       ) : (
         <EmptyState
           iconType={searchQuery ? "search" : "building"}

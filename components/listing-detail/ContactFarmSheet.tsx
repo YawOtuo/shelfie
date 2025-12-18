@@ -81,7 +81,7 @@ export function ContactFarmSheet({
                 <View className="flex-row items-center gap-1">
                   <Star size={14} color="#EAB308" fill="#EAB308" />
                   <Text className="text-sm text-gray-600">
-                    {farm.total_rating.toFixed(1)} • {farm.listings_count || 0} listings
+                    {farm.total_rating?.toFixed(1)}
                   </Text>
                 </View>
               </View>
@@ -183,13 +183,13 @@ export function ContactFarmSheet({
         </View>
 
         {/* Additional Info */}
-        {farm.description && (
+        {farm.farm_bio && (
           <View className="px-4 pb-4">
             <Text className="text-sm font-semibold text-gray-900 mb-2">
               About this farm
             </Text>
             <Text className="text-sm text-gray-600 leading-5">
-              {farm.description}
+              {farm.farm_bio}
             </Text>
           </View>
         )}
