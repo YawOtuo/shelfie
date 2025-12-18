@@ -105,7 +105,7 @@ export default function HomeScreen() {
           paddingBottom: 20,
         }}
       >
-        {/* Hero Search Component */}
+        {/* Hero Search Component with Integrated Categories */}
         <HeroSearch
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -115,6 +115,10 @@ export default function HomeScreen() {
           onFiltersPress={() => {
             // Handle filters
           }}
+          onCategoryPress={(category) => setActiveCategory(category as LivestockCategory)}
+          cattleCount={cattleListings.length}
+          goatsCount={goatsListings.length}
+          poultryCount={poultryListings.length}
         />
 
         {/* Livestock Listings Section */}
@@ -129,7 +133,7 @@ export default function HomeScreen() {
         />
 
         {/* Recommended Cattle Section */}
-        <View className="mt-10">
+        <View className="mt-4">
           <CategoryListingsSection
             title="Recommended Cattle"
             listings={cattleListings}
@@ -138,6 +142,13 @@ export default function HomeScreen() {
             onListingPress={(id) => router.push(`/listing/${id}`)}
           />
         </View>
+
+        {/* Featured Farms Section */}
+        <FeaturedFarmsSection
+          searchQuery={searchQuery}
+          onFarmPress={(id) => router.push(`/farm/${id}`)}
+        />
+
         {/* Goats Section */}
         <CategoryListingsSection
           title="Goats"
@@ -147,26 +158,20 @@ export default function HomeScreen() {
           onListingPress={(id) => router.push(`/listing/${id}`)}
         />
 
+        {/* Recommendation Buckets Section */}
+        <RecommendationBucketsSection
+          buckets={buckets}
+          isLoading={loadingBuckets}
+          error={bucketsError}
+          onListingPress={(id) => router.push(`/listing/${id}`)}
+        />
+
         {/* Poultry Section */}
         <CategoryListingsSection
           title="Poultry"
           listings={poultryListings}
           isLoading={loadingPoultry}
           error={poultryError}
-          onListingPress={(id) => router.push(`/listing/${id}`)}
-        />
-
-        {/* Featured Farms Section */}
-        <FeaturedFarmsSection
-          searchQuery={searchQuery}
-          onFarmPress={(id) => router.push(`/farm/${id}`)}
-        />
-
-        {/* Recommendation Buckets Section */}
-        <RecommendationBucketsSection
-          buckets={buckets}
-          isLoading={loadingBuckets}
-          error={bucketsError}
           onListingPress={(id) => router.push(`/listing/${id}`)}
         />
       </ScrollView>

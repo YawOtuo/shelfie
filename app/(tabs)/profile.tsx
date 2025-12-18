@@ -1,31 +1,17 @@
 import { useRouter } from "expo-router";
-import { Settings } from "lucide-react-native";
+import { Bell, Settings } from "lucide-react-native";
 import { ActivityIndicator, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LoadingScreen } from "../../components/LoadingScreen";
 import {
-  DashboardStats,
   LogoutButton,
   ProfileMenu,
-  UserInfoCard,
 } from "../../components/profile";
 import { Text } from "../../components/ui/Text";
 import { useTokenManager } from "../../lib/hooks/auth/useTokenManager";
 import { useGetCurrentUser } from "../../lib/hooks/useGetCurrentUser";
 import { useHybridSavedFarms } from "../../lib/hooks/useHybridSavedFarms";
 import { useHybridSavedListings } from "../../lib/hooks/useHybridSavedListings";
-import { useListings } from "../../lib/hooks/useListings";
-import { Listing } from "../../lib/types/listing";
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  listingTitle: string;
-  listingImage?: string;
-  farmName: string;
-  totalPrice: number;
-  status: "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled";
-}
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -36,9 +22,6 @@ export default function ProfileScreen() {
   // Get saved items and farms counts
   const { data: savedListings = [], isLoading: savedListingsLoading } = useHybridSavedListings();
   const { data: savedFarms = [], isLoading: savedFarmsLoading } = useHybridSavedFarms();
-  
-  // Fetch recommended listings
-  const { listings } = useListings({ limit: 10 });
 
   // Get logout function
   const { logout } = useTokenManager();
@@ -50,12 +33,6 @@ export default function ProfileScreen() {
     savedFarms: savedFarms.length,
   };
 
-  // Mock pending orders - replace with actual API data when available
-  const pendingOrders: Order[] = [];
-
-  // Get recommended listings (first 5 from fetched listings)
-  const recommendedListings: Listing[] = listings.slice(0, 5);
-
   const handleLogout = async () => {
     await logout();
   };
@@ -65,56 +42,77 @@ export default function ProfileScreen() {
     return <LoadingScreen />;
   }
 
-  // Get user display name - fallback to email or "User" if name is not available
-  const userName = user?.name || user?.email?.split("@")[0] || "User";
-  const firstName = userName.split(" ")[0];
-
   return (
     <SafeAreaView className="flex-1 bg-white" style={{ backgroundColor: '#FFFFFF' }} edges={['left', 'right']}>
       <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false} style={{ backgroundColor: '#FFFFFF' }}>
-        {/* Header with Welcome and Settings */}
-        <View className="bg-white px-5 pt-2 pb-3 border-b border-gray-100" style={{ backgroundColor: '#FFFFFF' }}>
-          <View className="flex-row items-center justify-between">
-            <View className="flex-1">
-              <Text className="text-xl font-bold text-gray-900" variant="bold">
-                Welcome back, {firstName}
-              </Text>
-              <Text className="text-xs text-gray-600 mt-1">
-                {user?.email || "N/A"}
-              </Text>
+        {/* Simplified Header */}
+        <View className="bg-white px-5 pt-2 pb-6" style={{ backgroundColor: '#FFFFFF' }}>
+          <View className="flex-row items-center justify-between mb-1">
+            <Text className="text-2xl font-bold text-gray-900" variant="bold">
+              Profile
+            </Text>
+            <View className="flex-row" style={{ gap: 8 }}>
+              <TouchableOpacity
+                onPress={() => router.push("/notifications")}
+                className="w-10 h-10 rounded-xl bg-gray-100 items-center justify-center"
+              >
+                <Bell color="#6B7280" size={20} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => router.push("/settings")}
+                className="w-10 h-10 rounded-xl bg-gray-100 items-center justify-center"
+              >
+                <Settings color="#6B7280" size={20} />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              onPress={() => router.push("/settings")}
-              className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center"
-            >
-              <Settings color="#11964a" size={20} />
-            </TouchableOpacity>
           </View>
+          <Text className="text-sm text-gray-600 mt-1">
+            {user?.email || ""}
+          </Text>
         </View>
 
-        {/* User Info Card - Always show with N/A for missing fields */}
-        <View className="mt-4">
-          <UserInfoCard
-            email={user?.email || "N/A"}
-            phone={user?.phone || "N/A"}
-            location="N/A" // TODO: Add location to user model if available
-          />
-        </View>
-
-        {/* Dashboard Stats */}
+        {/* Quick Stats - Simplified */}
         {(savedListingsLoading || savedFarmsLoading) ? (
-          <View className="mx-4 mt-4 items-center py-8">
+          <View className="mx-5 mb-6 items-center py-8">
             <ActivityIndicator size="large" color="#11964a" />
-            <Text className="text-gray-600 mt-4">Loading dashboard...</Text>
           </View>
         ) : (
-          <DashboardStats
-            totalOrders={dashboardStats.totalOrders}
-            savedItems={dashboardStats.savedItems}
-            savedFarms={dashboardStats.savedFarms}
-            pendingOrders={pendingOrders}
-            recommendedListings={recommendedListings}
-          />
+          <View className="px-5 mb-6">
+            <View className="flex-row" style={{ gap: 12 }}>
+              <TouchableOpacity
+                onPress={() => router.push("/orders")}
+                activeOpacity={0.7}
+                className="flex-1 bg-gray-50 rounded-2xl p-4"
+              >
+                <Text className="text-3xl font-bold text-gray-900 mb-1">
+                  {dashboardStats.totalOrders}
+                </Text>
+                <Text className="text-xs text-gray-600">Orders</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={() => router.push("/(tabs)/saved")}
+                activeOpacity={0.7}
+                className="flex-1 bg-gray-50 rounded-2xl p-4"
+              >
+                <Text className="text-3xl font-bold text-gray-900 mb-1">
+                  {dashboardStats.savedItems}
+                </Text>
+                <Text className="text-xs text-gray-600">Saved</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={() => router.push("/(tabs)/farms")}
+                activeOpacity={0.7}
+                className="flex-1 bg-gray-50 rounded-2xl p-4"
+              >
+                <Text className="text-3xl font-bold text-gray-900 mb-1">
+                  {dashboardStats.savedFarms}
+                </Text>
+                <Text className="text-xs text-gray-600">Farms</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
 
         {/* Menu Items */}
@@ -124,7 +122,7 @@ export default function ProfileScreen() {
         <LogoutButton onLogout={handleLogout} />
 
         {/* App Version */}
-        <View className="items-center pb-6">
+        <View className="items-center pb-6 mt-4">
           <Text className="text-gray-400 text-xs">Livestockly v1.0.0</Text>
         </View>
       </ScrollView>

@@ -3,7 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { SlidersHorizontal } from "lucide-react-native";
 import React from "react";
-import { TouchableOpacity, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { SearchBar } from "./SearchBar";
 import { Text } from "./ui/Text";
@@ -41,9 +41,13 @@ interface HeroSearchProps {
   onSearchChange: (text: string) => void;
   onSearchPress?: () => void;
   onFiltersPress?: () => void;
+  onCategoryPress?: (category: string) => void;
   placeholder?: string;
   categorySize?: VariantProps<typeof categoryCardVariants>["size"];
   categoryVariant?: VariantProps<typeof categoryCardVariants>["variant"];
+  cattleCount?: number;
+  goatsCount?: number;
+  poultryCount?: number;
 }
 
 const categories = [
@@ -59,18 +63,13 @@ export function HeroSearch({
   onSearchChange,
   onSearchPress,
   onFiltersPress,
+  onCategoryPress,
   placeholder = "Search for livestock...",
-  categorySize = "md",
-  categoryVariant = "default",
+  cattleCount = 0,
+  goatsCount = 0,
+  poultryCount = 0,
 }: HeroSearchProps) {
   const router = useRouter();
-
-  const handleCategoryPress = (category: string) => {
-    router.push({
-      pathname: "/(tabs)/search",
-      params: { category },
-    });
-  };
 
   return (
     <View className="relative pb-10 overflow-hidden">
@@ -80,16 +79,16 @@ export function HeroSearch({
         end={{ x: 0, y: 1 }}
         className="absolute inset-0"
       />
-      <View className="pr-16 pl-10 pt-20">
+      <View className="pt-20">
         {/* Header Text */}
-        <View className="mb-5 ">
+        <View className="mb-5 px-10 pr-16">
           <Text className=" text-primary  font-semibold text-2xl   leading-tight">
             Find the perfect <Text className="text-primary-dark font-semibold text-2xl">livestock/meat</Text> for your needs.
           </Text>
         </View>
 
         {/* Search Bar with White Background and Shadow */}
-        <View className="flex-row items-center gap-2 mb-4">
+        <View className="flex-row items-center gap-2 mb-4 px-10 pr-16">
           <SearchBar
             value={searchQuery}
             onChangeText={onSearchChange}
@@ -107,40 +106,72 @@ export function HeroSearch({
           </TouchableOpacity>
         </View>
 
-        {/* Category Tabs */}
-        {/* <ScrollView
-          horizontal
+        {/* Quick Category Pills */}
+        <ScrollView 
+          horizontal 
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingRight: 20, gap: 12 }}
+          contentContainerStyle={{ paddingLeft: 40, paddingRight: 40 }}
         >
-          {categories.map((category) => (
-            <TouchableOpacity
-              key={category.value}
-              onPress={() => handleCategoryPress(category.value)}
-              className={cn(categoryCardVariants({ size: categorySize, variant: categoryVariant }))}
-              activeOpacity={0.7}
-            >
-              <View className="mb-2">
-                <FontAwesome5 
-                  name={category.icon} 
-                  size={categoryIconSizes[categorySize || "md"]} 
-                  color="#11964a" 
-                />
+          <TouchableOpacity
+            onPress={() => onCategoryPress?.("cattle")}
+            className="mr-2 px-4 py-2 bg-white/95 rounded-full flex-row items-center gap-2 border border-green-200 shadow-sm"
+            activeOpacity={0.7}
+          >
+            <Text className="text-base">🐄</Text>
+            <Text className="text-xs font-semibold text-gray-900">Cattle</Text>
+            {cattleCount > 0 && (
+              <View className="bg-primary rounded-full px-2 py-0.5">
+                <Text className="text-white text-[10px] font-bold">{cattleCount}</Text>
               </View>
-              <Text 
-                className={cn(
-                  "font-semibold text-gray-900",
-                  categorySize === "sm" && "text-sm",
-                  categorySize === "md" && "text-base",
-                  categorySize === "lg" && "text-lg"
-                )} 
-                variant="semibold"
-              >
-                {category.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView> */}
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => onCategoryPress?.("goats")}
+            className="mr-2 px-4 py-2 bg-white/95 rounded-full flex-row items-center gap-2 border border-blue-200 shadow-sm"
+            activeOpacity={0.7}
+          >
+            <Text className="text-base">🐐</Text>
+            <Text className="text-xs font-semibold text-gray-900">Goats</Text>
+            {goatsCount > 0 && (
+              <View className="bg-blue-600 rounded-full px-2 py-0.5">
+                <Text className="text-white text-[10px] font-bold">{goatsCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => onCategoryPress?.("poultry")}
+            className="mr-2 px-4 py-2 bg-white/95 rounded-full flex-row items-center gap-2 border border-orange-200 shadow-sm"
+            activeOpacity={0.7}
+          >
+            <Text className="text-base">🐓</Text>
+            <Text className="text-xs font-semibold text-gray-900">Poultry</Text>
+            {poultryCount > 0 && (
+              <View className="bg-orange-600 rounded-full px-2 py-0.5">
+                <Text className="text-white text-[10px] font-bold">{poultryCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => onCategoryPress?.("sheep")}
+            className="mr-2 px-4 py-2 bg-white/95 rounded-full flex-row items-center gap-2 border border-purple-200 shadow-sm"
+            activeOpacity={0.7}
+          >
+            <Text className="text-base">🐑</Text>
+            <Text className="text-xs font-semibold text-gray-900">Sheep</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push("/(tabs)/search")}
+            className="px-4 py-2 bg-gray-900/90 rounded-full flex-row items-center gap-2 shadow-md"
+            activeOpacity={0.7}
+          >
+            <Text className="text-base">✨</Text>
+            <Text className="text-xs font-semibold text-white">View All</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
       {/* Wavy Bottom Edge */}
       <View className="absolute bottom-0 left-0 right-0" style={{ height: 40 }}>

@@ -1,22 +1,16 @@
-import { TouchableOpacity, View, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import {
-  Settings,
-  Bell,
-  Shield,
   HelpCircle,
-  ChevronRight,
-  Heart,
   Package,
+  Settings,
 } from "lucide-react-native";
+import { Alert, TouchableOpacity, View } from "react-native";
 import { Text } from "../ui/Text";
-import { Card } from "../ui/Card";
 
 interface ProfileMenuItem {
   icon: React.ComponentType<{ color: string; size: number }>;
   label: string;
   onPress: () => void;
-  showChevron?: boolean;
 }
 
 export function ProfileMenu() {
@@ -24,36 +18,14 @@ export function ProfileMenu() {
 
   const menuItems: ProfileMenuItem[] = [
     {
-      icon: Heart,
-      label: "Saved Items",
-      onPress: () => router.push("/(tabs)/saved"),
-      showChevron: true,
-    },
-    {
       icon: Package,
       label: "My Orders",
       onPress: () => router.push("/orders"),
-      showChevron: true,
-    },
-    {
-      icon: Bell,
-      label: "Notifications",
-      onPress: () => router.push("/notifications"),
-      showChevron: true,
     },
     {
       icon: Settings,
       label: "Settings",
       onPress: () => router.push("/settings"),
-      showChevron: true,
-    },
-    {
-      icon: Shield,
-      label: "Privacy & Security",
-      onPress: () => {
-        Alert.alert("Privacy & Security", "Privacy settings coming soon!");
-      },
-      showChevron: true,
     },
     {
       icon: HelpCircle,
@@ -61,7 +33,6 @@ export function ProfileMenu() {
       onPress: () => {
         Alert.alert("Help & Support", "Help & Support coming soon!");
       },
-      showChevron: true,
     },
   ];
 
@@ -72,23 +43,23 @@ export function ProfileMenu() {
         key={index}
         onPress={item.onPress}
         activeOpacity={0.7}
-        className="flex-row items-center py-4 border-b border-gray-100"
+        className="flex-1 bg-white rounded-2xl border border-gray-100 p-4 items-center"
+        style={{ minWidth: '30%' }}
       >
-        <View className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center mr-3">
-          <Icon color="#11964a" size={20} />
+        <View className="w-12 h-12 rounded-2xl bg-gray-50 items-center justify-center mb-3">
+          <Icon color="#6B7280" size={22} />
         </View>
-        <Text className="flex-1 text-base text-gray-900">{item.label}</Text>
-        {item.showChevron && (
-          <ChevronRight color="#9CA3AF" size={20} />
-        )}
+        <Text className="text-sm text-gray-900 text-center" numberOfLines={2}>{item.label}</Text>
       </TouchableOpacity>
     );
   };
 
   return (
-    <Card className="mx-4 mt-4" padding="none">
-      {menuItems.map((item, index) => renderMenuItem(item, index))}
-    </Card>
+    <View className="mx-5">
+      <View className="flex-row flex-wrap" style={{ gap: 12 }}>
+        {menuItems.map((item, index) => renderMenuItem(item, index))}
+      </View>
+    </View>
   );
 }
 

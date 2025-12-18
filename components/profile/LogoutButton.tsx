@@ -26,14 +26,14 @@ export function LogoutButton({ onLogout }: LogoutButtonProps) {
   };
 
   return (
-    <View className="mx-4 mt-6 mb-8">
+    <View className="mx-5 mt-6 mb-4">
       <TouchableOpacity
         onPress={handleLogout}
         activeOpacity={0.7}
-        className="flex-row items-center justify-center rounded-2xl border-2 border-red-500 bg-transparent py-4"
+        className="flex-row items-center justify-center rounded-xl border border-gray-200 bg-white py-4"
       >
-        <LogOut color="#EF4444" size={20} />
-        <Text className="text-red-500 ml-2 text-base font-semibold">
+        <LogOut color="#EF4444" size={18} />
+        <Text className="text-red-500 ml-2 text-sm font-medium">
           Logout
         </Text>
       </TouchableOpacity>

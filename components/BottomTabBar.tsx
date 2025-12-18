@@ -18,20 +18,22 @@ export function BottomTabBar(props: BottomTabBarProps) {
 
   return (
     <View
-      className="bg-white border-t border-gray-200"
+      className="bg-white rounded-t-3xl"
       style={{
         backgroundColor: '#FFFFFF',
         height: 60 + insets.bottom,
         paddingBottom: 8 + insets.bottom,
-        paddingTop: 8,
+        paddingTop: 12,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 5,
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 8,
+        borderTopWidth: 1,
+        borderTopColor: '#F3F4F6',
       }}
     >
-      <View className="flex-row items-center justify-around h-full">
+      <View className="flex-row items-center justify-around h-full px-2">
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const label =
@@ -72,17 +74,17 @@ export function BottomTabBar(props: BottomTabBarProps) {
               accessibilityLabel={options.tabBarAccessibilityLabel}
               onPress={onPress}
               onLongPress={onLongPress}
-              className={`flex-1 items-center justify-center py-1 rounded-lg ${isFocused ? "bg-primary/10" : ""}`}
+              className={`flex-1 items-center justify-center py-2 mx-1 rounded-2xl ${isFocused ? "bg-primary/5" : ""}`}
               activeOpacity={0.7}
             >
               <View className="items-center justify-center">
                 <Icon
                   size={22}
-                  color={isFocused ? "#11964a" : "#6B7280"}
+                  color={isFocused ? "#11964a" : "#9CA3AF"}
                   {...(route.name === "saved" ? { fill: isFocused ? "#11964a" : "transparent" } : {})}
                 />
                 <Text
-                  className={`text-[10px] mt-1 ${isFocused ? "text-primary" : "text-gray-500"}`}
+                  className={`text-[10px] mt-1 ${isFocused ? "text-primary" : "text-gray-400"}`}
                   variant={isFocused ? "semibold" : "regular"}
                 >
                   {typeof label === "string" ? label : route.name}
