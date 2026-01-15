@@ -86,15 +86,19 @@ export function Text({ className, variant, style, ...props }: TextProps) {
     fontFamily = getFontFamilyFromClassName(className);
   }
 
+  // Merge styles ensuring Poppins fontFamily always takes precedence
+  // If style is an array, spread it and ensure our fontFamily is applied last
+  // If style is an object, merge it with our fontFamily
+  const mergedStyle = style
+    ? Array.isArray(style)
+      ? [...style, { fontFamily }]
+      : [{ ...style, fontFamily }]
+    : { fontFamily };
+
   return (
     <RNText
       className={cleanedClassName}
-      style={[
-        {
-          fontFamily,
-        },
-        style,
-      ]}
+      style={mergedStyle}
       {...props}
     />
   );

@@ -14,8 +14,8 @@ const createAxiosInstance = (baseURL: string, isAuthInstance: boolean = false): 
   });
 
   if (!isAuthInstance) {
-    // Create the auth instance first
-    const authInstance: AxiosInstance = createAxiosInstance(API_CONFIG.CORE_URL, true);
+    // Create the auth instance for token refresh (using same baseURL for inventory backend)
+    const authInstance: AxiosInstance = createAxiosInstance(API_CONFIG.INVENTORY_BACKEND_URL, true);
     return setupInterceptors(instance, authInstance);
   }
 
@@ -27,6 +27,7 @@ export const coreAxios = createAxiosInstance(API_CONFIG.CORE_URL);
 export const marketplaceAxios = createAxiosInstance(API_CONFIG.MARKETPLACE_URL);
 export const recordKeeperAxios = createAxiosInstance(API_CONFIG.RECORDKEEPER_URL);
 export const paymentServiceAxios = createAxiosInstance(API_CONFIG.PAYMENT_SERVICE_URL);
+export const inventoryAxios = createAxiosInstance(API_CONFIG.INVENTORY_BACKEND_URL);
 
 // Export marketplace instance as default for backward compatibility
 export default marketplaceAxios; 

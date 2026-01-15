@@ -1,144 +1,50 @@
-import { coreAxios } from "../axiosinstance";
+import { inventoryAxios } from '../axiosinstance';
+import {
+    AuthResponse,
+    ConnectToShopInput,
+    ConnectToShopResponse,
+    LoginInput,
+    RefreshTokenResponse,
+    RegisterInput,
+} from '../types/auth';
+import { User } from '../types/user';
 
-export interface LoginBuyerResponse {
-  access_token: string;
-  user: {
-    id: string;
-    email?: string;
-    phone?: string;
-    name?: string;
-    [key: string]: any;
-  };
-}
-
-export interface SignupBuyerResponse {
-  access_token: string;
-  user: {
-    id: string;
-    email?: string;
-    phone?: string;
-    name?: string;
-    [key: string]: any;
-  };
-}
-
-/**
- * Login buyer with Cognito ID token
- */
-export async function loginBuyer(
-  idToken: string,
-  username?: string,
-  loginMethod?: string
-): Promise<LoginBuyerResponse> {
-  const response = await coreAxios.post<LoginBuyerResponse>(
-    '/api/auth/login/buyer',
-    {
-      username,
-      login_method: loginMethod,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
-    }
-  );
+export const register = async (data: RegisterInput): Promise<AuthResponse> => {
+  const response = await inventoryAxios.post<AuthResponse>('/auth/register', data);
   return response.data;
-}
+};
 
-/**
- * Signup buyer with Cognito ID token
- */
-export async function signupBuyer(
-  idToken: string,
-  username?: string,
-  loginMethod?: string
-): Promise<SignupBuyerResponse> {
-  const response = await coreAxios.post<SignupBuyerResponse>(
-    '/api/auth/signup/buyer',
-    {
-      username,
-      login_method: loginMethod,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
-    }
-  );
+export const login = async (data: LoginInput): Promise<AuthResponse> => {
+  const response = await inventoryAxios.post<AuthResponse>('/auth/login', data);
   return response.data;
-}
+};
 
-export interface LoginSellerResponse {
-  access_token: string;
-  user: {
-    id: string;
-    email?: string;
-    phone?: string;
-    name?: string;
-    [key: string]: any;
-  };
-}
-
-export interface SignupSellerResponse {
-  access_token: string;
-  user: {
-    id: string;
-    email?: string;
-    phone?: string;
-    name?: string;
-    [key: string]: any;
-  };
-}
-
-/**
- * Login seller with Cognito ID token
- */
-export async function loginSeller(
-  idToken: string,
-  farmId: string,
-  farmName: string,
-  username?: string,
-  loginMethod?: string
-): Promise<LoginSellerResponse> {
-  const response = await coreAxios.post<LoginSellerResponse>(
-    '/api/auth/login/seller',
-    {
-      farm_id: farmId,
-      farm_name: farmName,
-      username,
-      login_method: loginMethod,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
-    }
-  );
+export const refreshToken = async (refreshToken: string): Promise<RefreshTokenResponse> => {
+  const response = await inventoryAxios.post<RefreshTokenResponse>('/auth/refresh', {
+    refreshToken,
+  });
   return response.data;
-}
+};
 
-/**
- * Signup seller with Cognito ID token
- */
-export async function signupSeller(
-  idToken: string,
-  farmData: any,
-  username?: string,
-  loginMethod?: string
-): Promise<SignupSellerResponse> {
-  const response = await coreAxios.post<SignupSellerResponse>(
-    '/api/auth/signup/seller',
-    {
-      ...farmData,
-      username,
-      login_method: loginMethod,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
-    }
-  );
+export const logout = async (): Promise<void> => {
+  await inventoryAxios.post('/auth/logout');
+};
+
+export const getCurrentUser = async (): Promise<User> => {
+  const response = await inventoryAxios.get<User>('/auth/me');
   return response.data;
-}
+};
+
+export const changePassword = async (data: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<{ message: string }> => {
+  const response = await inventoryAxios.put<{ message: string }>('/auth/password', data);
+  return response.data;
+};
+
+export const connectToShop = async (data: ConnectToShopInput): Promise<ConnectToShopResponse> => {
+  const response = await inventoryAxios.post<ConnectToShopResponse>('/auth/connect-shop', data);
+  return response.data;
+};
 

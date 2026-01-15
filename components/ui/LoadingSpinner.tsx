@@ -36,7 +36,7 @@ interface LoadingSpinnerProps extends VariantProps<typeof spinnerContainerVarian
 
 export function LoadingSpinner({
   size = "large",
-  color = "#11964a",
+  color = "#D2B48C",
   text,
   className,
 }: LoadingSpinnerProps) {

@@ -4,5 +4,7 @@ export { Card } from "./Card";
 export { LoadingSpinner } from "./LoadingSpinner";
 export { EmptyState } from "./EmptyState";
 export { BottomSheet } from "./BottomSheet";
+export { SearchInput } from "./SearchInput";
 export { Tabs } from "./Tabs";
+export { Text } from "./Text";
 

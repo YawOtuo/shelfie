@@ -80,7 +80,7 @@ export function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === "primary" || variant === "danger" ? "white" : "#11964a"}
+          color={variant === "primary" || variant === "danger" ? "white" : "#D2B48C"}
         />
       ) : typeof children === "string" ? (
         <Text className={cn(textVariants({ variant, size }), textClassName)}>

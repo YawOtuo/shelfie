@@ -1,87 +1,42 @@
-import { ScrollView, TouchableOpacity, View, RefreshControl } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useRouter } from "expo-router";
 import {
-  Bell,
-  Package,
-  CheckCircle,
   AlertCircle,
-  Info,
-  X,
+  Bell,
   Heart,
+  Info,
+  Package,
   Truck,
+  X
 } from "lucide-react-native";
-import { Text } from "../components/ui/Text";
+import { useMemo } from "react";
+import { Alert, RefreshControl, ScrollView, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Header } from "../components/Header";
+import { NoShopConnected } from "../components/NoShopConnected";
+import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
-import { DetailHeader } from "../components/DetailHeader";
 import { EmptyState } from "../components/ui/EmptyState";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
+import { Text } from "../components/ui/Text";
+import { useDeleteNotification, useMarkAllNotificationsAsRead, useMarkNotificationAsRead, useShopNotifications } from "../lib/hooks/useNotifications";
+import { useAuthStore } from "../lib/stores/authStore";
+import { Notification } from "../lib/types/notification";
 
 type NotificationType = "order" | "promotion" | "system" | "saved" | "shipping";
 
-interface Notification {
-  id: string;
-  type: NotificationType;
-  title: string;
-  message: string;
-  timestamp: string;
-  read: boolean;
-  actionUrl?: string;
-}
-
-// Mock notifications data - replace with actual API call
-const mockNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "order",
-    title: "Order Confirmed",
-    message: "Your order ORD-2024-003 has been confirmed and is being processed.",
-    timestamp: "2024-01-22T10:30:00Z",
-    read: false,
-  },
-  {
-    id: "2",
-    type: "shipping",
-    title: "Order Shipped",
-    message: "Your order ORD-2024-002 has been shipped and is on its way.",
-    timestamp: "2024-01-20T14:15:00Z",
-    read: false,
-  },
-  {
-    id: "3",
-    type: "order",
-    title: "Order Delivered",
-    message: "Your order ORD-2024-001 has been delivered successfully.",
-    timestamp: "2024-01-20T09:00:00Z",
-    read: true,
-  },
-  {
-    id: "4",
-    type: "promotion",
-    title: "Special Offer",
-    message: "Get 15% off on all cattle listings this week! Limited time offer.",
-    timestamp: "2024-01-19T16:45:00Z",
-    read: false,
-  },
-  {
-    id: "5",
-    type: "saved",
-    title: "Price Drop Alert",
-    message: "A listing you saved has dropped in price. Check it out now!",
-    timestamp: "2024-01-18T11:20:00Z",
-    read: true,
-  },
-  {
-    id: "6",
-    type: "system",
-    title: "Welcome to Livestockly",
-    message: "Thank you for joining Livestockly! Start browsing livestock listings now.",
-    timestamp: "2024-01-15T08:00:00Z",
-    read: true,
-  },
-];
+// Map backend notification type to UI notification type
+const mapNotificationType = (type?: string): NotificationType => {
+  if (!type) return "system";
+  const lowerType = type.toLowerCase();
+  if (lowerType.includes("order") || lowerType.includes("sale")) return "order";
+  if (lowerType.includes("promotion") || lowerType.includes("offer")) return "promotion";
+  if (lowerType.includes("shipping") || lowerType.includes("delivery")) return "shipping";
+  if (lowerType.includes("saved") || lowerType.includes("favorite")) return "saved";
+  return "system";
+};
 
 const getNotificationIcon = (type: NotificationType) => {
-  const iconProps = { size: 20, color: "#11964a" };
+  const iconProps = { size: 20, color: "#D2B48C" };
   switch (type) {
     case "order":
       return <Package {...iconProps} />;
@@ -109,7 +64,7 @@ const getNotificationColor = (type: NotificationType) => {
     case "saved":
       return "#EF4444";
     case "system":
-      return "#11964a";
+      return "#D2B48C";
     default:
       return "#6B7280";
   }
@@ -141,43 +96,126 @@ const formatTimestamp = (timestamp: string) => {
 };
 
 export default function NotificationsScreen() {
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
-  const [refreshing, setRefreshing] = useState(false);
+  const router = useRouter();
+  const { user } = useAuthStore();
+  const shopId = user?.shopId;
+
+  // Fetch notifications
+  const { data: notificationsData, isLoading, error, refetch } = useShopNotifications(
+    shopId || 0,
+    !!shopId
+  );
+
+  // Mutations
+  const markAsReadMutation = useMarkNotificationAsRead();
+  const markAllAsReadMutation = useMarkAllNotificationsAsRead();
+  const deleteNotificationMutation = useDeleteNotification();
+
+  // Convert backend notifications to UI format
+  interface UINotification extends Notification {
+    uiType: NotificationType;
+    title: string;
+    timestamp: string;
+  }
+
+  const notifications: UINotification[] = useMemo(() => {
+    if (!notificationsData) return [];
+    return notificationsData.map((notif: Notification) => ({
+      ...notif,
+      uiType: mapNotificationType(notif.type),
+      title: notif.subject,
+      timestamp: notif.createdAt || new Date().toISOString(),
+    }));
+  }, [notificationsData]);
 
   const onRefresh = async () => {
-    setRefreshing(true);
-    // Simulate API call
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
+    refetch();
   };
 
-  const handleNotificationPress = (notification: Notification) => {
-    // Mark as read
-    setNotifications((prev) =>
-      prev.map((n) =>
-        n.id === notification.id ? { ...n, read: true } : n
-      )
-    );
-
-    // Handle navigation if actionUrl exists
-    if (notification.actionUrl) {
-      console.log("Navigate to:", notification.actionUrl);
+  const handleNotificationPress = async (notification: Notification) => {
+    if (!notification.read) {
+      try {
+        await markAsReadMutation.mutateAsync(notification.id);
+      } catch (error: any) {
+        Alert.alert("Error", error?.response?.data?.message || "Failed to mark as read");
+      }
     }
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  const handleMarkAllAsRead = async () => {
+    if (!shopId) return;
+    try {
+      await markAllAsReadMutation.mutateAsync(shopId);
+    } catch (error: any) {
+      Alert.alert("Error", error?.response?.data?.message || "Failed to mark all as read");
+    }
   };
 
-  const handleDeleteNotification = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  const handleDeleteNotification = async (id: number) => {
+    Alert.alert(
+      "Delete Notification",
+      "Are you sure you want to delete this notification?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteNotificationMutation.mutateAsync(id);
+            } catch (error: any) {
+              Alert.alert("Error", error?.response?.data?.message || "Failed to delete notification");
+            }
+          },
+        },
+      ]
+    );
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const renderNotification = (notification: Notification) => {
-    const iconColor = getNotificationColor(notification.type);
+  // Show loading state
+  if (isLoading && !notifications.length) {
+    return (
+      <SafeAreaView className="flex-1 bg-white" style={{ backgroundColor: '#FFFFFF' }} edges={["left", "right"]}>
+        <Header showBack={true} />
+        <View className="flex-1 items-center justify-center">
+          <LoadingSpinner size="large" />
+          <Text className="text-gray-600 mt-4">Loading notifications...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Show error state
+  if (error && !notifications.length) {
+    return (
+      <SafeAreaView className="flex-1 bg-white" style={{ backgroundColor: '#FFFFFF' }} edges={["left", "right"]}>
+        <Header showBack={true} />
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-red-600 text-center mb-4">
+            {error instanceof Error ? error.message : "Failed to load notifications"}
+          </Text>
+          <Button onPress={() => refetch()} size="lg">
+            Retry
+          </Button>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Show message if no shop
+  if (!shopId) {
+    return (
+      <SafeAreaView className="flex-1 bg-white" style={{ backgroundColor: '#FFFFFF' }} edges={["left", "right"]}>
+        <Header showBack={true} />
+        <NoShopConnected message="Please connect to a shop or create one to view notifications" />
+      </SafeAreaView>
+    );
+  }
+
+  const renderNotification = (notification: UINotification) => {
+    const iconColor = getNotificationColor(notification.uiType);
 
     return (
       <Card
@@ -191,7 +229,7 @@ export default function NotificationsScreen() {
             className="w-10 h-10 rounded-full items-center justify-center mr-3"
             style={{ backgroundColor: `${iconColor}15` }}
           >
-            {getNotificationIcon(notification.type)}
+            {getNotificationIcon(notification.uiType)}
           </View>
 
           {/* Content */}
@@ -214,7 +252,7 @@ export default function NotificationsScreen() {
                 {formatTimestamp(notification.timestamp)}
               </Text>
               <TouchableOpacity
-                onPress={() => handleDeleteNotification(notification.id)}
+                onPress={() => handleDeleteNotification(Number(notification.id))}
                 className="p-1"
               >
                 <X color="#9CA3AF" size={16} />
@@ -227,14 +265,15 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <DetailHeader title="Notifications" showBack={true} />
+    <SafeAreaView className="flex-1 bg-white" style={{ backgroundColor: '#FFFFFF' }} edges={["left", "right"]}>
+      <Header showBack={true} />
       <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingTop: 80, paddingBottom: 20 }}
+        className="flex-1 bg-white"
+        style={{ backgroundColor: '#FFFFFF' }}
+        contentContainerStyle={{ paddingTop: 20, paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
         }
       >
         <View className="px-4">

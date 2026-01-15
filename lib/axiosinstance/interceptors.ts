@@ -1,40 +1,51 @@
-import { AxiosInstance } from "axios";
-import { RefreshQueue } from "./refreshQueue";
+import { AxiosInstance, AxiosError } from "axios";
+import { useAuthStore } from "../stores/authStore";
+import { refreshToken } from "../api/auth";
 
-// Create a global refresh queue instance
-const refreshQueue = new RefreshQueue();
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: any) => void;
+  reject: (error?: any) => void;
+}> = [];
+
+const processQueue = (error: AxiosError | null, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+
+  failedQueue = [];
+};
 
 export const setupInterceptors = (
   instance: AxiosInstance,
   authInstance: AxiosInstance
 ) => {
-  // Request interceptor: enforce cookie-based auth model
+  // Request interceptor: Add JWT token to requests
   instance.interceptors.request.use(
     async (config) => {
-      // Always send credentials for cookie-based auth
+      // Always send credentials for cookie-based auth (if needed)
       config.withCredentials = true;
 
-      // Only allow Authorization header for login/signup where Cognito ID token is required
-      const authHeaderAllowedEndpoints = [
-        '/api/auth/login/buyer',
-        '/api/auth/login/seller',
-        '/api/auth/signup/seller'
-      ];
+      // Get access token from auth store
+      const accessToken = useAuthStore.getState().accessToken;
 
-      const isAuthHeaderAllowed = authHeaderAllowedEndpoints.some(endpoint =>
+      // Add Authorization header if token exists
+      if (accessToken && config.headers) {
+        config.headers["Authorization"] = `Bearer ${accessToken}`;
+      }
+
+      // Skip auth header for auth endpoints
+      const authEndpoints = ['/auth/register', '/auth/login', '/auth/refresh'];
+      const isAuthEndpoint = authEndpoints.some(endpoint =>
         config.url?.includes(endpoint)
       );
 
-      // Strip Authorization header for all non-auth app requests
-      if (!isAuthHeaderAllowed && config.headers) {
-        // Axios headers can be a plain object or AxiosHeaders; support both
-        try {
-          if (config.headers["Authorization"]) {
-            delete config.headers["Authorization"];
-          }
-        } catch {
-          // no-op
-        }
+      if (isAuthEndpoint && config.headers) {
+        delete config.headers["Authorization"];
       }
 
       return config;
@@ -42,83 +53,85 @@ export const setupInterceptors = (
     (error) => Promise.reject(error)
   );
 
-  // Response interceptor: handle 401 errors with automatic refresh
+  // Response interceptor: Handle 401 errors with token refresh
   instance.interceptors.response.use(
     (response) => response,
-    async (error) => {
-      const originalRequest = error.config;
+    async (error: AxiosError) => {
+      const originalRequest = error.config as any;
 
-      // Check if this is a 401 error and we haven't already tried to refresh
-      if (error.response?.status === 401 && !originalRequest._retry) {
-        // Skip refresh for auth endpoints (login/signup)
-        const authEndpoints = [
-          '/api/auth/login/buyer',
-          '/api/auth/login/seller',
-          '/api/auth/signup/seller',
-          '/api/auth/token/refresh'
-        ];
-        
-        const isAuthEndpoint = authEndpoints.some(endpoint =>
-          originalRequest.url?.includes(endpoint)
-        );
+      // Skip refresh for auth endpoints
+      const authEndpoints = [
+        '/auth/register',
+        '/auth/login',
+        '/auth/refresh',
+        '/auth/logout'
+      ];
+      const isAuthEndpoint = authEndpoints.some(endpoint =>
+        originalRequest?.url?.includes(endpoint)
+      );
 
-        if (isAuthEndpoint) {
+      if (isAuthEndpoint) {
+        return Promise.reject(error);
+      }
+
+      // Handle 401 Unauthorized
+      if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+        if (isRefreshing) {
+          // If already refreshing, queue this request
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then((token) => {
+              originalRequest.headers["Authorization"] = `Bearer ${token}`;
+              return instance(originalRequest);
+            })
+            .catch((err) => {
+              return Promise.reject(err);
+            });
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        const { refreshToken: storedRefreshToken, clearAuth } = useAuthStore.getState();
+
+        if (!storedRefreshToken) {
+          isRefreshing = false;
+          processQueue(error as any, null);
+          await clearAuth();
           return Promise.reject(error);
         }
 
-        // Mark this request as retried to prevent infinite loops
-        originalRequest._retry = true;
-
-        // If we're already refreshing, queue this request
-        if (refreshQueue.refreshing) {
-          try {
-            await refreshQueue.addToQueue();
-            // Retry the original request
-            return instance(originalRequest);
-          } catch (refreshError) {
-            return Promise.reject(refreshError);
-          }
-        }
-
-        // Start the refresh process
-        refreshQueue.refreshing = true;
-
         try {
-          // Call the refresh endpoint using the auth instance
-          const refreshResponse = await authInstance.post('/api/auth/token/refresh');
-          
-          // Process any queued requests
-          refreshQueue.processQueue(null, refreshResponse.data.access_token);
-          
-          // Retry the original request
-          return instance(originalRequest);
-        } catch (refreshError: any) {
-          // Refresh failed, process queue with error
-          refreshQueue.processQueue(refreshError);
-          
-          // // If refresh fails with 401, clear the user from store
-          // if (refreshError?.response?.status === 401 && typeof window !== 'undefined') {
-          //   // Use dynamic import to avoid circular dependency
-          //   import("../stores/authUserStore").then(({ useAuthUserStore }) => {
-          //     const { clearUser } = useAuthUserStore.getState();
-          //     clearUser();
-          //     console.error('Token refresh failed with 401, user cleared');
-          //   }).catch((err) => {
-          //     console.error('Failed to clear user after 401:', err);
-          //   });
-          // }
-          
-          // If refresh fails, redirect to login or handle as needed
-          if (typeof window !== 'undefined') {
-            // You can customize this behavior based on your app's needs
-            console.error('Token refresh failed:', refreshError);
-            // Optionally redirect to login page
-            // window.location.href = '/login';
+          // Call refresh token endpoint
+          const response = await authInstance.post('/auth/refresh', {
+            refreshToken: storedRefreshToken,
+          });
+
+          const { accessToken: newAccessToken } = response.data;
+
+          // Update access token in store
+          const currentUser = useAuthStore.getState().user;
+          if (currentUser && newAccessToken) {
+            await useAuthStore.getState().setAuth({
+              accessToken: newAccessToken,
+              refreshToken: storedRefreshToken,
+              user: currentUser,
+            });
           }
-          
+
+          // Process queued requests
+          processQueue(null, newAccessToken);
+
+          // Retry original request with new token
+          originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+          isRefreshing = false;
+          return instance(originalRequest);
+        } catch (refreshError) {
+          isRefreshing = false;
+          processQueue(refreshError as any, null);
+          await clearAuth();
           return Promise.reject(refreshError);
-        } finally {
-          refreshQueue.refreshing = false;
         }
       }
 

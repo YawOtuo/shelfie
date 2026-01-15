@@ -1,15 +1,13 @@
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { Building2, Heart, Home, Search, User } from "lucide-react-native";
+import { Building2, DollarSign, Settings } from "lucide-react-native";
 import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "./ui/Text";
 
 const tabIcons = {
-  "index": Home,
-  "search": Search,
-  "farms": Building2,
-  "saved": Heart,
-  "profile": User,
+  "index": Building2,
+  "sales": DollarSign,
+  "settings": Settings,
 };
 
 export function BottomTabBar(props: BottomTabBarProps) {
@@ -64,7 +62,7 @@ export function BottomTabBar(props: BottomTabBarProps) {
             });
           };
 
-          const Icon = tabIcons[route.name as keyof typeof tabIcons] || Home;
+          const Icon = tabIcons[route.name as keyof typeof tabIcons] || Building2;
 
           return (
             <TouchableOpacity
@@ -80,8 +78,7 @@ export function BottomTabBar(props: BottomTabBarProps) {
               <View className="items-center justify-center">
                 <Icon
                   size={22}
-                  color={isFocused ? "#11964a" : "#9CA3AF"}
-                  {...(route.name === "saved" ? { fill: isFocused ? "#11964a" : "transparent" } : {})}
+                  color={isFocused ? "#D2B48C" : "#9CA3AF"}
                 />
                 <Text
                   className={`text-[10px] mt-1 ${isFocused ? "text-primary" : "text-gray-400"}`}

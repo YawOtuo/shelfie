@@ -1,6 +1,6 @@
-# Livestockly Mobile - Buyer App
+# Shelfie Mobile - Buyer App
 
-A React Native mobile application for the Livestockly livestock marketplace platform, built with Expo.
+A React Native mobile application for the Shelfie marketplace platform, built with Expo.
 
 ## Features
 
@@ -82,9 +82,9 @@ yarn web
 
 ## Brand Colors
 
-- **Primary**: `#11964a` (Livestockly green)
-- **Primary Dark**: `#0e7a3c`
-- **Primary Light**: `#14b85b`
+- **Primary**: `#D2B48C` (Shelfie beige)
+- **Primary Dark**: `#A0826D`
+- **Primary Light**: `#E8D4B8`
 
 ## Components
 
@@ -105,7 +105,7 @@ All UI components use class-variance-authority for consistent variant management
 
 ## API Integration
 
-The app is integrated with Livestockly APIs:
+The app is integrated with Shelfie APIs:
 
 ### API Configuration
 
@@ -189,4 +189,4 @@ Search is performed both server-side (via API) and client-side for instant feedb
 
 0BSD
 
-# livestockly-mobile-buyer
+# shelfie-mobile-buyer

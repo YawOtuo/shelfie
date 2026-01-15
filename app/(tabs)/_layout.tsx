@@ -1,12 +1,10 @@
 import { Tabs } from "expo-router";
 import { View } from "react-native";
 import { BottomTabBar } from "../../components/BottomTabBar";
-import { TopNavBar } from "../../components/TopNavBar";
 
 export default function TabLayout() {
   return (
     <View className="flex-1 bg-white" style={{ backgroundColor: '#FFFFFF' }}>
-      <TopNavBar />
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -16,31 +14,19 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: "Home",
+            title: "Inventory",
           }}
         />
         <Tabs.Screen
-          name="search"
+          name="sales"
           options={{
-            title: "Search",
+            title: "Sales",
           }}
         />
         <Tabs.Screen
-          name="farms"
+          name="settings"
           options={{
-            title: "Farms",
-          }}
-        />
-        <Tabs.Screen
-          name="saved"
-          options={{
-            title: "Saved",
-          }}
-        />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            title: "Profile",
+            title: "Settings",
           }}
         />
       </Tabs>

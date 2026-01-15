@@ -1,13 +1,14 @@
 import { useRouter } from "expo-router";
-import { User, Mail, Lock } from "lucide-react-native";
+import { StatusBar } from "expo-status-bar";
+import { Lock, Mail, User } from "lucide-react-native";
 import { useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, View } from "react-native";
-import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Header } from "../components/Header";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Text } from "../components/ui/Text";
-import { useBuyerSignup } from "../lib/hooks/auth/useBuyerSignup";
+import { useRegister } from "../lib/hooks/useAuth";
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -15,7 +16,8 @@ export default function SignUpScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const { registerWithEmailAndPassword, loading, errorText } = useBuyerSignup();
+  const [errorText, setErrorText] = useState("");
+  const registerMutation = useRegister();
 
   const handleSignUp = async () => {
     // Simple validation
@@ -34,41 +36,44 @@ export default function SignUpScreen() {
       return;
     }
 
-    try {
-      await registerWithEmailAndPassword({
-        email,
-        password,
-        username: name,
-        options: {
-          redirect: true,
+    setErrorText("");
+    registerMutation.mutate(
+      { username: name, email, password },
+      {
+        onSuccess: (data) => {
+          // New users don't have shopId, so navigate to shop selection
+          router.replace("/select-shop");
         },
-      });
-      // Navigation is handled by useTokenManager
-    } catch (error: any) {
-      // Error is already handled by the hook and displayed via errorText
-      // You can add additional error handling here if needed
-      console.error("Signup error:", error);
-    }
+        onError: (error: any) => {
+          const errorMessage =
+            error?.response?.data?.message ||
+            error?.message ||
+            "An error occurred during signup";
+          setErrorText(errorMessage);
+        },
+      }
+    );
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-primary" edges={["top", "bottom"]}>
-      <StatusBar style="light" />
+    <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
+      <StatusBar style="dark" />
+      <Header showBack={true} className="bg-white" />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingBottom: 0 }}
+          contentContainerStyle={{ flexGrow: 1, paddingTop: 20, paddingBottom: 0 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Top Green Section */}
-          <View className="bg-primary pt-12 pb-20 px-6 justify-center">
+          {/* Welcome Section */}
+          <View className="bg-primary pt-8 pb-12 px-6">
             <View>
               {/* Welcome Text */}
               <Text className="text-white text-2xl font-bold mb-2 text-left">
-                Join Livestockly
+                Join Shelfie
               </Text>
               <Text className="text-white opacity-90 text-sm text-left">
                 Create your account and start trading
@@ -147,8 +152,8 @@ export default function SignUpScreen() {
               {/* Sign Up Button */}
               <Button
                 onPress={handleSignUp}
-                loading={loading}
-                disabled={!name || !email || !password || !confirmPassword || password !== confirmPassword || loading}
+                loading={registerMutation.isPending}
+                disabled={!name || !email || !password || !confirmPassword || password !== confirmPassword || registerMutation.isPending}
                 className="mb-4"
                 size="lg"
               >
