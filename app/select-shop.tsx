@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { Building2, Check, ChevronLeft, Package } from "lucide-react-native";
+import { Building2, Check, ChevronLeft, Package, Plus } from "lucide-react-native";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -120,9 +120,21 @@ export default function SelectShopScreen() {
         <View className="flex-1 justify-center items-center px-6">
           <EmptyState
             title="No Shops Available"
-            message="There are no shops available at the moment. Please contact support."
+            message="Create your first shop to get started with inventory management."
           />
-          <Button onPress={() => router.back()} variant="outline" size="lg" className="mt-4">
+          <Button 
+            onPress={() => router.push("/create-shop")} 
+            size="lg" 
+            className="mt-4"
+          >
+            Create a New Shop
+          </Button>
+          <Button 
+            onPress={() => router.back()} 
+            variant="outline" 
+            size="lg" 
+            className="mt-3"
+          >
             Go Back
           </Button>
         </View>
@@ -176,6 +188,27 @@ export default function SelectShopScreen() {
                 </Card>
               </TouchableOpacity>
             ))}
+            
+            {/* Create New Shop Button */}
+            {shops.length > 0 && (
+              <TouchableOpacity
+                onPress={() => router.push("/create-shop")}
+                activeOpacity={0.7}
+              >
+                <Card className="p-4 border-2 border-dashed border-primary/30 bg-primary/5">
+                  <View className="flex-row items-center justify-center">
+                    <View className="w-12 h-12 rounded-full bg-primary/10 items-center justify-center mr-4">
+                      <Plus size={24} color="#0e7a3c" />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-base font-semibold text-primary text-center">
+                        Create a New Shop
+                      </Text>
+                    </View>
+                  </View>
+                </Card>
+              </TouchableOpacity>
+            )}
           </View>
         </ScrollView>
 

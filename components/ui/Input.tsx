@@ -35,6 +35,7 @@ interface InputProps extends VariantProps<typeof inputVariants> {
   keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
   editable?: boolean;
+  placeholderTextColor?: string;
 }
 
 export function Input({
@@ -50,17 +51,18 @@ export function Input({
   keyboardType = "default",
   autoCapitalize = "sentences",
   editable = true,
+  placeholderTextColor = "#9CA3AF",
 }: InputProps) {
   return (
     <View className="w-full">
       {label && (
-        <Text className="text-sm font-medium text-gray-700 mb-1">{label}</Text>
+        <Text className="text-sm font-medium text-gray-500 mb-1">{label}</Text>
       )}
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="#9CA3AF"
+        placeholderTextColor={placeholderTextColor}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}

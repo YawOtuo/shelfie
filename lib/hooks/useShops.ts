@@ -9,8 +9,9 @@ import {
   getShopUsers,
   getShopAcceptedUsers,
   getShopUnacceptedUsers,
+  getCurrentUserShop,
 } from '../api/shops';
-import { CreateShopInput } from '../types/shop';
+import { CreateShopInput, UpdateShopInput } from '../types/shop';
 
 // Query keys
 export const shopKeys = {
@@ -39,6 +40,14 @@ export const useShop = (id: number, enabled: boolean = true) => {
     queryKey: shopKeys.detail(id),
     queryFn: () => getShopById(id),
     enabled: enabled && !!id,
+  });
+};
+
+export const useCurrentUserShop = (enabled: boolean = true) => {
+  return useQuery({
+    queryKey: [...shopKeys.all, 'current-user'] as const,
+    queryFn: getCurrentUserShop,
+    enabled,
   });
 };
 
@@ -88,11 +97,12 @@ export const useCreateShop = () => {
 export const useUpdateShop = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<CreateShopInput> }) =>
+    mutationFn: ({ id, data }: { id: number; data: UpdateShopInput }) =>
       updateShop(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: shopKeys.all });
       queryClient.invalidateQueries({ queryKey: shopKeys.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: [...shopKeys.all, 'current-user'] });
     },
   });
 };

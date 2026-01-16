@@ -1,3 +1,4 @@
+import { StatusBar } from "expo-status-bar";
 import { Plus } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import {
@@ -19,6 +20,7 @@ import { Input } from "../../components/ui/Input";
 import { LoadingSpinner } from "../../components/ui/LoadingSpinner";
 import { SearchInput } from "../../components/ui/SearchInput";
 import { Text } from "../../components/ui/Text";
+import { useToast } from "../../components/ui/ToastProvider";
 import { useRefillInventory } from "../../lib/hooks/useInventory";
 import { useCreateItem, useDeleteItem, useItems, useSearchItems, useUpdateItem } from "../../lib/hooks/useItems";
 import { useAuthStore } from "../../lib/stores/authStore";
@@ -28,6 +30,7 @@ export default function InventoryScreen() {
   const { user } = useAuthStore();
   const shopId = user?.shopId;
   const userId = user?.id;
+  const { showSuccess, showError } = useToast();
 
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -87,7 +90,7 @@ export default function InventoryScreen() {
 
   const handleSaveItem = async (data: CreateItemInput | UpdateItemInput) => {
     if (!shopId || !userId) {
-      Alert.alert("Error", "Shop ID or User ID not available");
+      showError("Shop ID or User ID not available");
       return;
     }
 
@@ -107,19 +110,19 @@ export default function InventoryScreen() {
             shopId: shopId,
           },
         });
-        Alert.alert("Success", "Item updated successfully");
+        showSuccess("Item updated successfully");
       } else {
         // Create new item
         await createItemMutation.mutateAsync({
           ...data,
           shopId: shopId,
         });
-        Alert.alert("Success", "Item created successfully");
+        showSuccess("Item created successfully");
       }
       setSheetVisible(false);
       setSelectedItem(null);
     } catch (error: any) {
-      Alert.alert("Error", error?.response?.data?.message || "Failed to save item");
+      showError(error?.response?.data?.message || "Failed to save item");
     }
   };
 
@@ -230,6 +233,7 @@ export default function InventoryScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
+      <StatusBar style="dark" />
       <Header />
       <ScrollView
         className="flex-1"
@@ -315,6 +319,7 @@ export default function InventoryScreen() {
             setSheetMode("edit");
           }
         }}
+        isLoading={createItemMutation.isPending || updateItemMutation.isPending}
       />
 
       {/* Quantity Refill Sheet */}

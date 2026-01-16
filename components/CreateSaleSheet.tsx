@@ -13,6 +13,7 @@ import { Input } from "./ui/Input";
 import { Text } from "./ui/Text";
 import { CreateSaleInput, SaleItem } from "../lib/types/sale";
 import { Item } from "../lib/types/item";
+import { colors } from "../lib/colors";
 
 interface CreateSaleSheetProps {
   visible: boolean;
@@ -158,6 +159,9 @@ export function CreateSaleSheet({
                 placeholder="Search by name or SKU..."
                 className="mb-3"
               />
+              <Text className="text-sm font-medium text-gray-700 mb-2" variant="medium">
+                Available Items
+              </Text>
               <View className="max-h-40">
                 <ScrollView className="border border-gray-200 rounded-2xl">
                   {filteredItems.length === 0 ? (
@@ -180,10 +184,10 @@ export function CreateSaleSheet({
                               {item.name}
                             </Text>
                             <Text className="text-xs text-gray-500">
-                              Stock: {item.quantity} {item.category && `• ${item.category}`}
+                              Stock: {item.quantity} {item.unit_price && typeof item.unit_price === 'number' ? `• Unit Price: GHS ${item.unit_price.toFixed(2)}` : ''} {item.category && `• ${item.category}`}
                             </Text>
                           </View>
-                          <Plus size={18} color="#D2B48C" />
+                          <Plus size={18} color={colors.primary.DEFAULT} />
                         </View>
                       </TouchableOpacity>
                     ))
@@ -209,48 +213,54 @@ export function CreateSaleSheet({
                           Available: {si.item.quantity}
                         </Text>
                       </View>
-                      <TouchableOpacity
-                        onPress={() => removeItem(si.item.id)}
-                        className="p-1"
-                      >
-                        <X size={16} color="#DC2626" />
-                      </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => removeItem(si.item.id)}
+                          className="p-1"
+                        >
+                          <X size={16} color={colors.red[500]} />
+                        </TouchableOpacity>
                     </View>
 
-                    <View className="flex-row items-center gap-3">
-                      <View className="flex-row items-center bg-gray-100 rounded-xl">
-                        <TouchableOpacity
-                          onPress={() => updateQuantity(si.item.id, -1)}
-                          className="p-2"
-                          disabled={si.quantity <= 1}
-                        >
-                          <Minus
-                            size={16}
-                            color={si.quantity <= 1 ? "#D1D5DB" : "#6B7280"}
-                          />
-                        </TouchableOpacity>
-                        <Text className="px-4 py-2 text-sm font-medium text-gray-900" variant="medium">
-                          {si.quantity}
+                    <View className="flex-row items-end gap-3">
+                      <View>
+                        <Text className="text-sm font-medium text-gray-700 mb-1" variant="medium">
+                          Quantity
                         </Text>
-                        <TouchableOpacity
-                          onPress={() => updateQuantity(si.item.id, 1)}
-                          className="p-2"
-                          disabled={si.quantity >= si.item.quantity}
-                        >
-                          <Plus
-                            size={16}
-                            color={
-                              si.quantity >= si.item.quantity ? "#D1D5DB" : "#6B7280"
-                            }
-                          />
-                        </TouchableOpacity>
+                        <View className="flex-row items-center bg-gray-100 rounded-xl">
+                          <TouchableOpacity
+                            onPress={() => updateQuantity(si.item.id, -1)}
+                            className="p-2"
+                            disabled={si.quantity <= 1}
+                          >
+                            <Minus
+                              size={16}
+                              color={si.quantity <= 1 ? colors.gray[300] : colors.gray[500]}
+                            />
+                          </TouchableOpacity>
+                          <Text className="px-4 py-2 text-sm font-medium text-gray-900" variant="medium">
+                            {si.quantity}
+                          </Text>
+                          <TouchableOpacity
+                            onPress={() => updateQuantity(si.item.id, 1)}
+                            className="p-2"
+                            disabled={si.quantity >= si.item.quantity}
+                          >
+                            <Plus
+                              size={16}
+                              color={
+                                si.quantity >= si.item.quantity ? colors.gray[300] : colors.gray[500]
+                              }
+                            />
+                          </TouchableOpacity>
+                        </View>
                       </View>
 
                       <View className="flex-1">
                         <Input
+                          label="Price"
                           value={si.unitPrice > 0 ? si.unitPrice.toString() : (si.item.unit_price?.toString() || "")}
                           onChangeText={(text) => updatePrice(si.item.id, text)}
-                          placeholder={si.item.unit_price?.toString() || "Price"}
+                          placeholder={si.item.unit_price?.toString() || "0.00"}
                           keyboardType="numeric"
                           size="sm"
                         />

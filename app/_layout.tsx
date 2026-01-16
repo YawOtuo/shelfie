@@ -4,9 +4,10 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
+import { AuthGuard } from "../components/AuthGuard";
+import { ToastProvider } from "../components/ui/ToastProvider";
 import "../global.css";
 import { QueryProvider } from "../lib/providers/QueryProvider";
-import { AuthGuard } from "../components/AuthGuard";
 import { useAuthStore } from "../lib/stores/authStore";
 
 // Keep the splash screen visible while we fetch resources
@@ -62,21 +63,23 @@ export default function RootLayout() {
 
   return (
     <QueryProvider>
-      <AuthGuard>
-        <View className="flex-1 bg-white">
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="login" options={{ headerShown: false }} />
-            <Stack.Screen name="signup" options={{ headerShown: false }} />
-            <Stack.Screen name="select-shop" options={{ headerShown: false }} />
-            <Stack.Screen name="create-shop" options={{ headerShown: false }} />
-            <Stack.Screen name="profile" options={{ headerShown: false }} />
-            <Stack.Screen name="notifications" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-        </View>
-      </AuthGuard>
+      <ToastProvider>
+        <AuthGuard>
+          <View className="flex-1 bg-white">
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="login" options={{ headerShown: false }} />
+              <Stack.Screen name="signup" options={{ headerShown: false }} />
+              <Stack.Screen name="select-shop" options={{ headerShown: false }} />
+              <Stack.Screen name="create-shop" options={{ headerShown: false }} />
+              <Stack.Screen name="profile" options={{ headerShown: false }} />
+              <Stack.Screen name="notifications" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          </View>
+        </AuthGuard>
+      </ToastProvider>
     </QueryProvider>
   );
 }

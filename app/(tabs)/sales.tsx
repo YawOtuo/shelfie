@@ -1,3 +1,4 @@
+import { StatusBar } from "expo-status-bar";
 import { DollarSign, Plus, ShoppingBag, TrendingUp } from "lucide-react-native";
 import { useState, useMemo } from "react";
 import {
@@ -54,16 +55,18 @@ export default function SalesScreen() {
     // Group by date or create individual sales from inventory records
     return soldItemsData.map((inventory: InventoryWithRelations) => {
       const item = inventory.Item;
+      const cost = inventory.cost ? Number(inventory.cost) : 0;
+      const quantity = inventory.quantity || 1;
       return {
         id: inventory.id.toString(),
         items: [{
           itemId: inventory.itemId.toString(),
           itemName: item?.name || "Unknown Item",
-          quantity: inventory.quantity,
-          unitPrice: inventory.cost / inventory.quantity, // Cost per unit
-          total: inventory.cost,
+          quantity: quantity,
+          unitPrice: quantity > 0 ? cost / quantity : 0, // Cost per unit
+          total: cost,
         }],
-        totalAmount: inventory.cost,
+        totalAmount: cost,
         customerName: undefined, // Not stored in inventory
         notes: undefined, // Not stored in inventory
         createdAt: inventory.date || inventory.createdAt,
@@ -90,8 +93,14 @@ export default function SalesScreen() {
     return saleDate.getTime() === today.getTime();
   });
 
-  const todayRevenue = todaySales.reduce((sum, sale) => sum + sale.totalAmount, 0);
-  const totalRevenue = sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+  const todayRevenue = (todaySales.reduce((sum, sale) => {
+    const amount = typeof sale.totalAmount === 'number' ? sale.totalAmount : (Number(sale.totalAmount) || 0);
+    return sum + amount;
+  }, 0)) || 0;
+  const totalRevenue = (sales.reduce((sum, sale) => {
+    const amount = typeof sale.totalAmount === 'number' ? sale.totalAmount : (Number(sale.totalAmount) || 0);
+    return sum + amount;
+  }, 0)) || 0;
   const totalSales = sales.length;
 
   const handleCreateSale = async (saleInput: CreateSaleInput) => {
@@ -175,6 +184,7 @@ export default function SalesScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
+      <StatusBar style="dark" />
       <Header />
       <ScrollView
         className="flex-1"
@@ -202,7 +212,7 @@ export default function SalesScreen() {
                 <Text className="text-xs text-gray-600 ml-2 font-medium">Today's Revenue</Text>
               </View>
               <Text className="text-2xl font-bold text-gray-900" variant="bold">
-                GHS {todayRevenue.toFixed(2)}
+                GHS {(todayRevenue || 0).toFixed(2)}
               </Text>
             </View>
             <View 
@@ -218,7 +228,7 @@ export default function SalesScreen() {
                 <Text className="text-xs text-gray-600 ml-2 font-medium">All Time</Text>
               </View>
               <Text className="text-2xl font-bold text-gray-900" variant="bold">
-                GHS {totalRevenue.toFixed(2)}
+                GHS {(totalRevenue || 0).toFixed(2)}
               </Text>
             </View>
           </View>
@@ -331,7 +341,7 @@ export default function SalesScreen() {
               <View className="bg-primary/10 rounded-2xl p-4 mb-4">
                 <Text className="text-sm text-gray-600 mb-1">Total Amount</Text>
                 <Text className="text-3xl font-bold text-gray-900" variant="bold">
-                  GHS {selectedSale.totalAmount.toFixed(2)}
+                  GHS {(selectedSale.totalAmount || 0).toFixed(2)}
                 </Text>
               </View>
 
@@ -362,11 +372,11 @@ export default function SalesScreen() {
                         {item.itemName}
                       </Text>
                       <Text className="text-sm text-gray-500">
-                        {item.quantity} × GHS {item.unitPrice.toFixed(2)}
+                        {item.quantity} × GHS {(item.unitPrice || 0).toFixed(2)}
                       </Text>
                     </View>
                     <Text className="text-base font-semibold text-gray-900" variant="semibold">
-                      GHS {item.total.toFixed(2)}
+                      GHS {(item.total || 0).toFixed(2)}
                     </Text>
                   </View>
                 ))}

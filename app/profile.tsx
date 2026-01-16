@@ -1,35 +1,39 @@
 import { useRouter } from "expo-router";
-import { Building2, Heart, LogOut, Mail, MapPin, Package, Phone, Settings, User as UserIcon } from "lucide-react-native";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import { LogOut, Mail, Phone, User as UserIcon, Edit2, ChevronRight } from "lucide-react-native";
+import { ScrollView, TouchableOpacity, View, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Header } from "../components/Header";
 import { Card } from "../components/ui/Card";
 import { Text } from "../components/ui/Text";
+import { Button } from "../components/ui/Button";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { useAuthStore } from "../lib/stores/authStore";
 import { useLogout } from "../lib/hooks/useAuth";
-import { useItems } from "../lib/hooks/useItems";
-import { useRecentlySoldItems } from "../lib/hooks/useInventory";
+import { colors } from "../lib/colors";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const logoutMutation = useLogout();
-  const shopId = user?.shopId;
-
-  // Fetch stats
-  const { data: itemsData } = useItems(1, 100, !!shopId);
-  const { data: soldItemsData } = useRecentlySoldItems(shopId || 0, !!shopId);
-
-  // Calculate stats
-  const dashboardStats = {
-    totalOrders: soldItemsData?.length || 0,
-    savedItems: 0, // Not available in backend
-    inventory: itemsData?.items.length || 0,
-  };
 
   const handleLogout = async () => {
-    logoutMutation.mutate();
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: () => {
+            logoutMutation.mutate();
+          },
+        },
+      ]
+    );
   };
 
   if (!user) {
@@ -53,118 +57,108 @@ export default function ProfileScreen() {
         contentContainerStyle={{ paddingTop: 20, paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="px-4">
+        <View className="px-5">
           {/* User Profile Header */}
           <View className="mb-6">
-            <View className="flex-row items-center mb-4">
-              <View className="w-16 h-16 rounded-full bg-primary items-center justify-center mr-4">
-                <UserIcon color="#FFFFFF" size={32} />
-              </View>
-              <View className="flex-1">
-                <Text className="text-lg font-bold text-gray-900 mb-0.5" variant="bold">
-                  {user.username || "User"}
-                </Text>
-                <Text className="text-sm text-gray-600">
-                  {user.email || "No email"}
-                </Text>
-              </View>
-            </View>
-
-            {/* Contact Information */}
-            <View style={{ gap: 10 }}>
-              <View className="flex-row items-center py-2">
-                <Mail color="#6B7280" size={18} />
-                <Text className="ml-3 text-gray-700 flex-1 text-sm">
-                  {user.email || "N/A"}
-                </Text>
-              </View>
-              {user.phoneNumber && (
-                <View className="flex-row items-center py-2">
-                  <Phone color="#6B7280" size={18} />
-                  <Text className="ml-3 text-gray-700 flex-1 text-sm">
-                    {user.phoneNumber}
+            <Card className="p-5" style={{ backgroundColor: colors.primary[100] }}>
+              <View className="flex-row items-start mb-5">
+                <View className="w-24 h-24 rounded-full bg-primary items-center justify-center shadow-sm" style={{ shadowColor: colors.primary.DEFAULT, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 }}>
+                  <UserIcon color={colors.white} size={40} />
+                </View>
+                <View className="flex-1 ml-4 pt-2">
+                  <Text className="text-2xl text-gray-900 mb-1" variant="bold">
+                    {user.username || "User"}
                   </Text>
-                </View>
-              )}
-            </View>
-          </View>
-
-          {/* Quick Stats */}
-          <View className="mb-6">
-            <Text className="text-sm font-semibold text-gray-900 mb-3">Overview</Text>
-            <View className="flex-row" style={{ gap: 10 }}>
-              <TouchableOpacity
-                onPress={() => router.push("/orders")}
-                activeOpacity={0.7}
-                className="flex-1 bg-gray-50 rounded-xl p-3"
-              >
-                <Package color="#D2B48C" size={18} />
-                <Text className="text-xl font-bold text-gray-900 mt-1.5 mb-0.5">
-                  {dashboardStats.totalOrders}
-                </Text>
-                <Text className="text-xs text-gray-600">Orders</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                onPress={() => router.push("/(tabs)/index")}
-                activeOpacity={0.7}
-                className="flex-1 bg-gray-50 rounded-xl p-3"
-              >
-                <Heart color="#D2B48C" size={18} />
-                <Text className="text-xl font-bold text-gray-900 mt-1.5 mb-0.5">
-                  {dashboardStats.savedItems}
-                </Text>
-                <Text className="text-xs text-gray-600">Saved</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                onPress={() => router.push("/(tabs)/index")}
-                activeOpacity={0.7}
-                className="flex-1 bg-gray-50 rounded-xl p-3"
-              >
-                <Building2 color="#D2B48C" size={18} />
-                <Text className="text-xl font-bold text-gray-900 mt-1.5 mb-0.5">
-                  {dashboardStats.inventory}
-                </Text>
-                <Text className="text-xs text-gray-600">Inventory</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Menu Section */}
-          <View className="mb-6">
-            <Text className="text-sm font-semibold text-gray-900 mb-3">Account</Text>
-            <Card className="mb-3" padding="md">
-              <TouchableOpacity
-                onPress={() => router.push("/(tabs)/settings")}
-                activeOpacity={0.7}
-                className="flex-row items-center"
-              >
-                <View className="w-9 h-9 rounded-full bg-gray-100 items-center justify-center mr-3">
-                  <Settings color="#6B7280" size={18} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-medium text-gray-900">
-                    Settings
+                  <Text className="text-sm text-gray-600 mb-3">
+                    {user.email || "No email"}
                   </Text>
+                  <Button
+                    onPress={() => {
+                      // TODO: Navigate to edit profile
+                      Alert.alert("Edit Profile", "Coming soon");
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="border-primary"
+                  >
+                    <View className="flex-row items-center">
+                      <Edit2 color={colors.primary.DEFAULT} size={14} style={{ marginRight: 6 }} />
+                      <Text className="text-primary" variant="medium" style={{ fontSize: 13 }}>
+                        Edit Profile
+                      </Text>
+                    </View>
+                  </Button>
                 </View>
-              </TouchableOpacity>
+              </View>
+
+              {/* Contact Information */}
+              <View className="pt-4 border-t border-primary/20">
+                <Text className="text-xs font-semibold text-gray-500 mb-3 uppercase" variant="semibold">
+                  Contact Information
+                </Text>
+                <View style={{ gap: 12 }}>
+                  {user.email && (
+                    <View className="flex-row items-center py-2">
+                      <View className="w-9 h-9 rounded-lg bg-primary/10 items-center justify-center mr-3">
+                        <Mail color={colors.primary.DEFAULT} size={18} />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-xs text-gray-500 mb-0.5" variant="medium">
+                          Email
+                        </Text>
+                        <Text className="text-sm text-gray-900">
+                          {user.email}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+                  {user.phoneNumber && (
+                    <View className="flex-row items-center py-2">
+                      <View className="w-9 h-9 rounded-lg bg-primary/10 items-center justify-center mr-3">
+                        <Phone color={colors.primary.DEFAULT} size={18} />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-xs text-gray-500 mb-0.5" variant="medium">
+                          Phone
+                        </Text>
+                        <Text className="text-sm text-gray-900">
+                          {user.phoneNumber}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+                  {!user.email && !user.phoneNumber && (
+                    <View className="py-3">
+                      <Text className="text-sm text-gray-500 text-center italic">
+                        No contact information available
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
             </Card>
+          </View>
 
-            <Card className="mb-3" padding="md">
+          {/* Logout Section */}
+          <View className="mb-6">
+            <Card padding="none" className="p-1">
               <TouchableOpacity
                 onPress={handleLogout}
                 activeOpacity={0.7}
-                className="flex-row items-center"
+                className="flex-row items-center py-3 px-4"
               >
-                <View className="w-9 h-9 rounded-full bg-red-100 items-center justify-center mr-3">
-                  <LogOut color="#EF4444" size={18} />
+                <View className="w-10 h-10 rounded-lg bg-red-100 items-center justify-center mr-3">
+                  <LogOut color={colors.red[500]} size={20} />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-base font-medium text-red-600">
+                  <Text className="text-base text-red-600" variant="medium">
                     Logout
                   </Text>
+                  <Text className="text-xs text-gray-500 mt-0.5">
+                    Sign out of your account
+                  </Text>
                 </View>
+                <ChevronRight color={colors.gray[400]} size={20} />
               </TouchableOpacity>
             </Card>
           </View>

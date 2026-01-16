@@ -2,6 +2,7 @@ import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Building2, DollarSign, Settings } from "lucide-react-native";
 import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import PagerView from "react-native-pager-view";
 import { Text } from "./ui/Text";
 
 const tabIcons = {
@@ -10,9 +11,19 @@ const tabIcons = {
   "settings": Settings,
 };
 
-export function BottomTabBar(props: BottomTabBarProps) {
+interface BottomTabBarPropsWithPager extends BottomTabBarProps {
+  pagerRef?: React.RefObject<PagerView | null>;
+}
+
+const routeToIndex: Record<string, number> = {
+  "index": 0,
+  "sales": 1,
+  "settings": 2,
+};
+
+export function BottomTabBar(props: BottomTabBarPropsWithPager) {
   const insets = useSafeAreaInsets();
-  const { state, descriptors, navigation } = props;
+  const { state, descriptors, navigation, pagerRef } = props;
 
   return (
     <View
@@ -51,6 +62,11 @@ export function BottomTabBar(props: BottomTabBarProps) {
             });
 
             if (!isFocused && !event.defaultPrevented) {
+              // Sync pager if available
+              const pageIndex = routeToIndex[route.name] ?? index;
+              if (pagerRef?.current) {
+                pagerRef.current.setPage(pageIndex);
+              }
               navigation.navigate(route.name, route.params);
             }
           };
@@ -78,10 +94,10 @@ export function BottomTabBar(props: BottomTabBarProps) {
               <View className="items-center justify-center">
                 <Icon
                   size={22}
-                  color={isFocused ? "#D2B48C" : "#9CA3AF"}
+                  color={isFocused ? "#1F2937" : "#1F2937"}
                 />
                 <Text
-                  className={`text-[10px] mt-1 ${isFocused ? "text-primary" : "text-gray-400"}`}
+                  className={`text-[10px] mt-1 ${isFocused ? "text-gray-900" : "text-gray-600"}`}
                   variant={isFocused ? "semibold" : "regular"}
                 >
                   {typeof label === "string" ? label : route.name}

@@ -6,13 +6,15 @@ import { Header } from "../components/Header";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Text } from "../components/ui/Text";
+import { useCurrentUser } from "../lib/hooks/useAuth";
 import { useCreateShop } from "../lib/hooks/useShops";
 import { useAuthStore } from "../lib/stores/authStore";
 
 export default function CreateShopScreen() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, updateUser } = useAuthStore();
   const [name, setName] = useState("");
+  const { refetch: refetchUser } = useCurrentUser();
 
   const createShopMutation = useCreateShop();
 
@@ -27,18 +29,16 @@ export default function CreateShopScreen() {
         name: name.trim(),
       });
 
-      Alert.alert("Success", "Shop created successfully", [
-        {
-          text: "OK",
-          onPress: () => {
-            // Update user's shopId and navigate back
-            if (user && shop) {
-              useAuthStore.getState().updateUser({ ...user, shopId: shop.id });
-              router.back();
-            }
-          },
-        },
-      ]);
+      // Backend automatically connects the user to the shop
+      // Fetch updated user data to get the new shopId
+      const updatedUserData = await refetchUser();
+      
+      if (updatedUserData.data) {
+        await updateUser(updatedUserData.data);
+      }
+
+      // Navigate to home since user is now connected to a shop
+      router.replace("/(tabs)");
     } catch (error: any) {
       Alert.alert("Error", error?.response?.data?.message || "Failed to create shop");
     }

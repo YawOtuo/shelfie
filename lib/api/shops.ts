@@ -55,4 +55,9 @@ export const getShopUnacceptedUsers = async (shopId: number): Promise<User[]> =>
   return response.data;
 };
 
+export const getCurrentUserShop = async (): Promise<Shop> => {
+  const response = await inventoryAxios.get<Shop>('/shops/me/current');
+  return response.data;
+};
+
 
