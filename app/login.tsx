@@ -69,7 +69,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <View className="flex-1 bg-primary-900">
+    <View className="flex-1 bg-primary-200">
       <StatusBar style="light" />
       
       <SafeAreaView className="flex-1" edges={["left", "right"]}>

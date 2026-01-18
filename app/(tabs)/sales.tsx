@@ -1,25 +1,20 @@
 import { StatusBar } from "expo-status-bar";
-import { DollarSign, Plus, ShoppingBag, TrendingUp } from "lucide-react-native";
+import { Plus } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import {
-    Alert,
-    RefreshControl,
-    ScrollView,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { RefreshControl, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CreateSaleSheet } from "../../components/CreateSaleSheet";
 import { Header } from "../../components/Header";
 import { NoShopConnected } from "../../components/NoShopConnected";
 import { SaleCard } from "../../components/SaleCard";
 import { SwipeableTabWrapper } from "../../components/SwipeableTabWrapper";
-import { BottomSheet } from "../../components/ui/BottomSheet";
+import { ErrorState, FloatingActionButton, LoadingState } from "../../components/common";
+import { SaleDetailSheet, SalesStats } from "../../components/sales";
 import { Button } from "../../components/ui/Button";
 import { EmptyState } from "../../components/ui/EmptyState";
-import { LoadingSpinner } from "../../components/ui/LoadingSpinner";
 import { SearchInput } from "../../components/ui/SearchInput";
-import { Text } from "../../components/ui/Text";
+import { useToast } from "../../components/ui/ToastProvider";
+import { colors } from "../../lib/colors";
 import { useRecentlySoldItems, useSellInventory } from "../../lib/hooks/useInventory";
 import { useItems } from "../../lib/hooks/useItems";
 import { useAuthStore } from "../../lib/stores/authStore";
@@ -30,6 +25,7 @@ export default function SalesScreen() {
   const { user } = useAuthStore();
   const shopId = user?.shopId;
   const userId = user?.id;
+  const { showSuccess, showError } = useToast();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [createSaleVisible, setCreateSaleVisible] = useState(false);
@@ -52,9 +48,10 @@ export default function SalesScreen() {
   const sales: Sale[] = useMemo(() => {
     if (!soldItemsData) return [];
     
-    // Group by date or create individual sales from inventory records
     return soldItemsData.map((inventory: InventoryWithRelations) => {
-      const item = inventory.Item;
+      // Response uses lowercase 'item', not uppercase 'Item'
+      const item = (inventory as any).item || (inventory as any).Item;
+      
       const cost = inventory.cost ? Number(inventory.cost) : 0;
       const quantity = inventory.quantity || 1;
       return {
@@ -63,12 +60,12 @@ export default function SalesScreen() {
           itemId: inventory.itemId.toString(),
           itemName: item?.name || "Unknown Item",
           quantity: quantity,
-          unitPrice: quantity > 0 ? cost / quantity : 0, // Cost per unit
+          unitPrice: quantity > 0 ? cost / quantity : 0,
           total: cost,
         }],
         totalAmount: cost,
-        customerName: undefined, // Not stored in inventory
-        notes: undefined, // Not stored in inventory
+        customerName: undefined,
+        notes: undefined,
         createdAt: inventory.date || inventory.createdAt,
         updatedAt: inventory.updatedAt,
       };
@@ -105,12 +102,11 @@ export default function SalesScreen() {
 
   const handleCreateSale = async (saleInput: CreateSaleInput) => {
     if (!shopId || !userId) {
-      Alert.alert("Error", "Shop ID or User ID not available");
+      showError("Shop ID or User ID not available");
       return;
     }
 
     try {
-      // Create inventory records for each item sold
       const promises = saleInput.items.map((saleItem) => {
         const totalCost = saleItem.quantity * saleItem.unitPrice;
         return sellInventoryMutation.mutateAsync({
@@ -125,11 +121,11 @@ export default function SalesScreen() {
       });
 
       await Promise.all(promises);
-      Alert.alert("Success", "Sale created successfully");
+      showSuccess("Sale created successfully");
       setCreateSaleVisible(false);
       refetchSales();
     } catch (error: any) {
-      Alert.alert("Error", error?.response?.data?.message || "Failed to create sale");
+      showError(error?.response?.data?.message || "Failed to create sale");
     }
   };
 
@@ -146,12 +142,10 @@ export default function SalesScreen() {
   if ((salesLoading || itemsLoading) && !sales.length) {
     return (
       <SwipeableTabWrapper tabIndex={1}>
-        <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
+        <SafeAreaView className="flex-1" style={{ backgroundColor: colors.white }} edges={["left", "right"]}>
+          <StatusBar style="dark" />
           <Header />
-          <View className="flex-1 items-center justify-center">
-            <LoadingSpinner size="large" />
-            <Text className="text-gray-600 mt-4">Loading sales...</Text>
-          </View>
+          <LoadingState message="Loading sales..." />
         </SafeAreaView>
       </SwipeableTabWrapper>
     );
@@ -161,16 +155,13 @@ export default function SalesScreen() {
   if (salesError && !sales.length) {
     return (
       <SwipeableTabWrapper tabIndex={1}>
-        <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
+        <SafeAreaView className="flex-1" style={{ backgroundColor: colors.white }} edges={["left", "right"]}>
+          <StatusBar style="dark" />
           <Header />
-          <View className="flex-1 items-center justify-center px-6">
-            <Text className="text-red-600 text-center mb-4">
-              {salesError instanceof Error ? salesError.message : "Failed to load sales"}
-            </Text>
-            <Button onPress={() => refetchSales()} size="lg">
-              Retry
-            </Button>
-          </View>
+          <ErrorState
+            message={salesError instanceof Error ? salesError.message : "Failed to load sales"}
+            onRetry={refetchSales}
+          />
         </SafeAreaView>
       </SwipeableTabWrapper>
     );
@@ -180,7 +171,8 @@ export default function SalesScreen() {
   if (!shopId) {
     return (
       <SwipeableTabWrapper tabIndex={1}>
-        <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
+        <SafeAreaView className="flex-1" style={{ backgroundColor: colors.white }} edges={["left", "right"]}>
+          <StatusBar style="dark" />
           <Header />
           <NoShopConnected message="Please connect to a shop or create one to view sales" />
         </SafeAreaView>
@@ -190,230 +182,85 @@ export default function SalesScreen() {
 
   return (
     <SwipeableTabWrapper tabIndex={1}>
-      <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
-      <StatusBar style="dark" />
-      <Header />
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: 100,
-        }}
-        refreshControl={
-          <RefreshControl refreshing={salesLoading} onRefresh={onRefresh} />
-        }
-      >
-        {/* Stats Section */}
-        <View className="px-5 pt-4 pb-6">
-          <View className="flex-row gap-3 mb-4">
-            <View 
-              className="flex-1 rounded-2xl p-4 shadow-md"
-              style={{
-                backgroundColor: '#FAF5F0',
-              }}
-            >
-              <View className="flex-row items-center mb-2">
-                <View className="w-7 h-7 rounded-full bg-white items-center justify-center">
-                  <DollarSign size={16} color="#b49a67" strokeWidth={2.5} />
-                </View>
-                <Text className="text-xs text-gray-600 ml-2 font-medium">Today's Revenue</Text>
-              </View>
-              <Text className="text-2xl font-bold text-gray-900" variant="bold">
-                GHS {(todayRevenue || 0).toFixed(2)}
-              </Text>
-            </View>
-            <View 
-              className="flex-1 rounded-2xl p-4 shadow-md"
-              style={{
-                backgroundColor: '#F0F4F8',
-              }}
-            >
-              <View className="flex-row items-center mb-2">
-                <View className="w-7 h-7 rounded-full bg-white items-center justify-center">
-                  <TrendingUp size={16} color="#64748B" strokeWidth={2.5} />
-                </View>
-                <Text className="text-xs text-gray-600 ml-2 font-medium">All Time</Text>
-              </View>
-              <Text className="text-2xl font-bold text-gray-900" variant="bold">
-                GHS {(totalRevenue || 0).toFixed(2)}
-              </Text>
-            </View>
-          </View>
-          <View 
-            className="rounded-2xl p-4 bg-white shadow-md"
-          >
-            <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center">
-                <View className="w-9 h-9 rounded-full bg-gray-100 items-center justify-center">
-                  <ShoppingBag size={18} color="#6B7280" strokeWidth={2.5} />
-                </View>
-                <View className="ml-3">
-                  <Text className="text-xs text-gray-500 mb-0.5">Total Transactions</Text>
-                  <Text className="text-xl font-bold text-gray-900" variant="bold">
-                    {totalSales} sales
-                  </Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Search Section */}
-        <View className="px-5 pb-6">
-          <SearchInput
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder="Search sales..."
-            onSearchPress={() => {
-              console.log("Search:", searchQuery);
-            }}
-          />
-        </View>
-
-        {/* Sales List */}
-        <View className="px-5">
-          {filteredSales.length === 0 ? (
-            <EmptyState
-              title={searchQuery ? "No sales found" : "No sales yet"}
-              message={
-                searchQuery
-                  ? "Try adjusting your search"
-                  : "Create your first sale to get started"
-              }
-              action={
-                !searchQuery ? (
-                  <Button
-                    onPress={() => setCreateSaleVisible(true)}
-                    size="md"
-                  >
-                    Create Sale
-                  </Button>
-                ) : undefined
-              }
-            />
-          ) : (
-            filteredSales.map((sale) => (
-              <SaleCard
-                key={sale.id}
-                sale={sale}
-                onPress={() => handleViewSale(sale)}
-              />
-            ))
-          )}
-        </View>
-      </ScrollView>
-
-      {/* Floating Action Button */}
-      <TouchableOpacity
-        onPress={() => setCreateSaleVisible(true)}
-        className="absolute bottom-6 right-6 w-14 h-14 bg-primary rounded-full items-center justify-center shadow-lg"
-        activeOpacity={0.8}
-        style={{
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.84,
-          elevation: 5,
-        }}
-      >
-        <Plus size={24} color="#FFFFFF" />
-      </TouchableOpacity>
-
-      {/* Create Sale Sheet */}
-      <CreateSaleSheet
-        visible={createSaleVisible}
-        items={items}
-        onClose={() => setCreateSaleVisible(false)}
-        onCreate={handleCreateSale}
-      />
-
-      {/* Sale Detail Sheet */}
-      <BottomSheet
-        visible={saleDetailVisible}
-        onClose={() => {
-          setSaleDetailVisible(false);
-          setSelectedSale(null);
-        }}
-        title="Sale Details"
-        height={500}
-      >
+      <SafeAreaView className="flex-1" style={{ backgroundColor: colors.white }} edges={["left", "right"]}>
+        <StatusBar style="dark" />
+        <Header />
         <ScrollView
           className="flex-1"
+          style={{ backgroundColor: colors.white }}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          refreshControl={
+            <RefreshControl refreshing={salesLoading} onRefresh={onRefresh} />
+          }
         >
-          {selectedSale && (
-            <View className="px-6 pt-4">
-              {/* Total */}
-              <View className="bg-primary/10 rounded-2xl p-4 mb-4">
-                <Text className="text-sm text-gray-600 mb-1">Total Amount</Text>
-                <Text className="text-3xl font-bold text-gray-900" variant="bold">
-                  GHS {(selectedSale.totalAmount || 0).toFixed(2)}
-                </Text>
-              </View>
+          <SalesStats
+            todayRevenue={todayRevenue}
+            totalRevenue={totalRevenue}
+            totalSales={totalSales}
+          />
 
-              {/* Customer */}
-              {selectedSale.customerName && (
-                <View className="mb-4">
-                  <Text className="text-sm font-medium text-gray-700 mb-1" variant="medium">
-                    Customer
-                  </Text>
-                  <Text className="text-base text-gray-900">
-                    {selectedSale.customerName}
-                  </Text>
-                </View>
-              )}
+          <View className="px-5 pb-6">
+            <SearchInput
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder="Search sales..."
+              onSearchPress={() => {}}
+            />
+          </View>
 
-              {/* Items */}
-              <View className="mb-4">
-                <Text className="text-sm font-medium text-gray-700 mb-3" variant="medium">
-                  Items ({selectedSale.items.length})
-                </Text>
-                {selectedSale.items.map((item, index) => (
-                  <View
-                    key={index}
-                    className="flex-row justify-between items-center py-3 border-b border-gray-100 last:border-b-0"
-                  >
-                    <View className="flex-1">
-                      <Text className="text-base text-gray-900" variant="medium">
-                        {item.itemName}
-                      </Text>
-                      <Text className="text-sm text-gray-500">
-                        {item.quantity} × GHS {(item.unitPrice || 0).toFixed(2)}
-                      </Text>
-                    </View>
-                    <Text className="text-base font-semibold text-gray-900" variant="semibold">
-                      GHS {(item.total || 0).toFixed(2)}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-
-              {/* Notes */}
-              {selectedSale.notes && (
-                <View className="mb-4">
-                  <Text className="text-sm font-medium text-gray-700 mb-1" variant="medium">
-                    Notes
-                  </Text>
-                  <Text className="text-base text-gray-900">
-                    {selectedSale.notes}
-                  </Text>
-                </View>
-              )}
-
-              {/* Date */}
-              <View>
-                <Text className="text-sm font-medium text-gray-700 mb-1" variant="medium">
-                  Date
-                </Text>
-                <Text className="text-base text-gray-900">
-                  {new Date(selectedSale.createdAt).toLocaleString()}
-                </Text>
-              </View>
-            </View>
-          )}
+          <View className="px-5">
+            {filteredSales.length === 0 ? (
+              <EmptyState
+                title={searchQuery ? "No sales found" : "No sales yet"}
+                message={
+                  searchQuery
+                    ? "Try adjusting your search"
+                    : "Create your first sale to get started"
+                }
+                action={
+                  !searchQuery ? (
+                    <Button
+                      onPress={() => setCreateSaleVisible(true)}
+                      size="md"
+                    >
+                      Create Sale
+                    </Button>
+                  ) : undefined
+                }
+              />
+            ) : (
+              filteredSales.map((sale) => (
+                <SaleCard
+                  key={sale.id}
+                  sale={sale}
+                  onPress={() => handleViewSale(sale)}
+                />
+              ))
+            )}
+          </View>
         </ScrollView>
-      </BottomSheet>
+
+        <FloatingActionButton
+          onPress={() => setCreateSaleVisible(true)}
+          icon={Plus}
+        />
+
+        <CreateSaleSheet
+          visible={createSaleVisible}
+          items={items}
+          onClose={() => setCreateSaleVisible(false)}
+          onCreate={handleCreateSale}
+        />
+
+        <SaleDetailSheet
+          visible={saleDetailVisible}
+          sale={selectedSale}
+          onClose={() => {
+            setSaleDetailVisible(false);
+            setSelectedSale(null);
+          }}
+        />
       </SafeAreaView>
     </SwipeableTabWrapper>
   );

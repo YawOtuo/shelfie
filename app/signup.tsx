@@ -58,8 +58,8 @@ export default function SignUpScreen() {
   };
 
   return (
-    <View className="flex-1 bg-primary-900">
-      <StatusBar style="light" />
+    <View className="flex-1 bg-primary-200">
+      <StatusBar style="dark" />
       
       <SafeAreaView className="flex-1" edges={["left", "right"]}>
         <KeyboardAvoidingView
@@ -88,16 +88,16 @@ export default function SignUpScreen() {
                 className="self-start mb-6 -mt-4"
               >
                 <View className="flex-row items-center">
-                  <ArrowLeft size={20} color="#E0D1BC" />
-                  <Text className="text-primary-200 text-sm ml-2">Back</Text>
+                  <ArrowLeft size={20} color="rgba(102, 82, 55, 0.7)" />
+                  <Text className="text-primary-800 text-sm ml-2">Back</Text>
                 </View>
               </Button>
 
               <View className="mb-8">
-                <Text className="text-3xl font-bold text-white text-center mb-2">
+                <Text className="text-3xl font-bold text-primary-900 text-center mb-2">
                   Join Shelfie
                 </Text>
-                <Text className="text-base text-primary-100 text-center">
+                <Text className="text-base text-primary-800 text-center">
                   Create your account and start trading
                 </Text>
               </View>
@@ -111,8 +111,8 @@ export default function SignUpScreen() {
                     onChangeText={setName}
                     autoCapitalize="words"
                     size="md"
-                    className="bg-white/5 border border-white/10 rounded-full h-14 px-6 text-white"
-                    placeholderTextColor="rgba(224, 209, 188, 0.5)"
+                    className="bg-transparent border border-primary-900 rounded-full h-14 px-6 text-primary-900"
+                    placeholderTextColor="rgba(102, 82, 55, 0.5)"
                   />
                 </View>
 
@@ -124,8 +124,8 @@ export default function SignUpScreen() {
                     keyboardType="email-address"
                     autoCapitalize="none"
                     size="md"
-                    className="bg-white/5 border border-white/10 rounded-full h-14 px-6 text-white"
-                    placeholderTextColor="rgba(224, 209, 188, 0.5)"
+                    className="bg-transparent border border-primary-900 rounded-full h-14 px-6 text-primary-900"
+                    placeholderTextColor="rgba(102, 82, 55, 0.5)"
                   />
                 </View>
 
@@ -136,8 +136,8 @@ export default function SignUpScreen() {
                     onChangeText={setPassword}
                     autoCapitalize="none"
                     size="md"
-                    className="bg-white/5 border border-white/10 rounded-full h-14 px-6 text-white pr-14"
-                    placeholderTextColor="rgba(224, 209, 188, 0.5)"
+                    className="bg-transparent border border-primary-900 rounded-full h-14 px-6 text-primary-900 pr-14"
+                    placeholderTextColor="rgba(102, 82, 55, 0.5)"
                   />
                   {password.length > 0 && (
                     <View className="mt-2 flex-row items-center">
@@ -173,14 +173,14 @@ export default function SignUpScreen() {
                     returnKeyType="done"
                     blurOnSubmit={true}
                     size="md"
-                    className={`bg-white/5 border rounded-full h-14 px-6 text-white pr-14 ${
+                    className={`bg-transparent border rounded-full h-14 px-6 text-primary-900 pr-14 ${
                       confirmPassword.length > 0
                         ? password === confirmPassword
                           ? "border-green-500/50"
                           : "border-red-500/50"
-                        : "border-white/10"
+                        : "border-primary-900"
                     }`}
-                    placeholderTextColor="rgba(224, 209, 188, 0.5)"
+                    placeholderTextColor="rgba(102, 82, 55, 0.5)"
                   />
                   {confirmPassword.length > 0 && (
                     <View className="mt-2 flex-row items-center">
@@ -232,12 +232,12 @@ export default function SignUpScreen() {
 
               {/* Login Link */}
               <View className="flex-row justify-center items-center mb-10">
-                <Text className="text-primary-200/50 text-sm">Already have an account? </Text>
+                <Text className="text-primary-800/50 text-sm">Already have an account? </Text>
                 <Button
                   onPress={() => router.push("/login")}
                   variant="ghost"
                   size="sm"
-                  textClassName="text-white font-bold text-sm"
+                  textClassName="text-primary-900 font-bold text-sm"
                 >
                   Sign In
                 </Button>

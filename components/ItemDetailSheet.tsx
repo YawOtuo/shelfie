@@ -173,7 +173,7 @@ export function ItemDetailSheet({
       visible={visible}
       onClose={onClose}
       title={mode === "create" ? "Create Item" : mode === "edit" ? "Edit Item" : "Item Details"}
-      height={600}
+      height={mode === "create" ? 700 : mode === "edit" ? 700 : 650}
       showCloseButton={true}
     >
       {isLoading && (

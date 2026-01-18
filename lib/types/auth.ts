@@ -29,5 +29,8 @@ export interface ConnectToShopInput {
 export interface ConnectToShopResponse {
   message: string;
   user: User;
+  accessToken?: string;
+  refreshToken?: string;
+  shopId?: number;
 }
 

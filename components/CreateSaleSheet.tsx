@@ -139,7 +139,7 @@ export function CreateSaleSheet({
       visible={visible}
       onClose={onClose}
       title="Create Sale"
-      height={700}
+      height={800}
       showCloseButton={true}
     >
       <View className="flex-1">

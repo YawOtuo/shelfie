@@ -10,7 +10,7 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const { isAuthenticated, user, isLoading, initialize } = useAuthStore();
-  const segments = useRouter();
+  const segments = useSegments();
   const router = useRouter();
   const [isAuthReady, setIsAuthReady] = useState(false);
 
@@ -30,17 +30,17 @@ export function AuthGuard({ children }: AuthGuardProps) {
       return;
     }
 
-    const inAuthGroup = segments[0] === "(auth)" || segments[0] === "login" || segments[0] === "signup";
-    const inPublicGroup = segments[0] === "login" || segments[0] === "signup";
+    const currentSegment = segments[0] || "";
+    const inPublicGroup = currentSegment === "login" || currentSegment === "signup";
 
     // If not authenticated and trying to access protected routes
-    if (!isAuthenticated && !inPublicGroup) {
+    if (!isAuthenticated && !inPublicGroup && currentSegment !== "select-shop") {
       router.replace("/login");
       return;
     }
 
-    // If authenticated and on auth pages, redirect based on shop status
-    if (isAuthenticated && inPublicGroup) {
+    // If authenticated and on signup page, redirect based on shop status
+    if (isAuthenticated && currentSegment === "signup") {
       if (user?.shopId) {
         router.replace("/(tabs)");
       } else {
@@ -49,8 +49,11 @@ export function AuthGuard({ children }: AuthGuardProps) {
       return;
     }
 
+    // Allow authenticated users to stay on login page to see shop selection
+    // (They will see shop selection inline after login)
+
     // If authenticated but no shop and trying to access tabs
-    if (isAuthenticated && !user?.shopId && segments[0] === "(tabs)") {
+    if (isAuthenticated && !user?.shopId && currentSegment === "(tabs)") {
       router.replace("/select-shop");
       return;
     }

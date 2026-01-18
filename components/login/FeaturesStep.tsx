@@ -1,52 +1,100 @@
-import { ScrollView, View } from "react-native";
+import { ScrollView, View, Platform } from "react-native";
+import { Package, TrendingUp, BarChart3, Sparkles } from "lucide-react-native";
 import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
 import { Text } from "../ui/Text";
+import { colors } from "../../lib/colors";
 
 interface FeaturesStepProps {
   onNext: () => void;
 }
 
+interface Feature {
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ color?: string; size?: number }>;
+}
+
 export function FeaturesStep({ onNext }: FeaturesStepProps) {
-  const features = [
+  const features: Feature[] = [
     {
       title: "Inventory Management",
-      description: "Track your products",
+      description: "Track your products and stock levels in real-time",
+      icon: Package,
     },
     {
       title: "Sales Tracking",
-      description: "Monitor sales and revenue",
+      description: "Monitor sales performance and revenue insights",
+      icon: TrendingUp,
     },
     {
       title: "Business Growth",
-      description: "Data-driven decisions",
+      description: "Make data-driven decisions to grow your business",
+      icon: BarChart3,
     },
   ];
 
   return (
     <ScrollView
-      contentContainerStyle={{ flexGrow: 1, justifyContent: "center", paddingHorizontal: 24 }}
+      contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingVertical: 32 }}
       showsVerticalScrollIndicator={false}
-      style={{ width: "100%" }}
+      style={{ backgroundColor: colors.primary[200] }}
     >
-      <View className="mb-8">
-        <Text className="text-3xl font-bold text-white text-center mb-3">
-          Why Shelfie?
-        </Text>
-        <Text className="text-base text-primary-100 text-center mb-6 leading-6">
-          Everything you need in one place
-        </Text>
-        <View className="gap-3">
+      <View className="flex-1 justify-center">
+        {/* Header Section */}
+        <View className="items-center mb-8">
+          <View 
+            className="w-16 h-16 rounded-2xl items-center justify-center mb-4"
+            style={{
+              backgroundColor: colors.primary[100],
+              ...Platform.select({
+                ios: {
+                  shadowColor: colors.primary.DEFAULT,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 8,
+                },
+                android: {
+                  elevation: 4,
+                },
+              }),
+            }}
+          >
+            <Sparkles color={colors.primary.DEFAULT} size={32} />
+          </View>
+          <Text className="text-2xl text-gray-900 mb-2" variant="bold">
+            Why Shelfie?
+          </Text>
+          <Text className="text-sm text-gray-500 text-center max-w-xs">
+            Everything you need to manage your business in one powerful platform
+          </Text>
+        </View>
+
+        {/* Features Grid */}
+        <View className="mb-8" style={{ gap: 12 }}>
           {features.map((feature, index) => {
+            const Icon = feature.icon;
             return (
               <View
                 key={index}
-                className="mb-1"
+                className="flex-row items-start"
+                style={{
+                  backgroundColor: colors.primary[100],
+                  borderRadius: 16,
+                  padding: 16,
+                }}
               >
+                <View 
+                  className="w-12 h-12 rounded-xl items-center justify-center mr-4"
+                  style={{ backgroundColor: colors.primary[200] }}
+                >
+                  <Icon color={colors.primary.DEFAULT} size={22} />
+                </View>
                 <View className="flex-1">
-                  <Text className="text-xl font-bold text-white mb-1">
+                  <Text className="text-sm text-gray-900 mb-1" variant="semibold">
                     {feature.title}
                   </Text>
-                  <Text className="text-sm text-primary-200/80 leading-5">
+                  <Text className="text-xs text-gray-600 leading-4">
                     {feature.description}
                   </Text>
                 </View>
@@ -54,11 +102,17 @@ export function FeaturesStep({ onNext }: FeaturesStepProps) {
             );
           })}
         </View>
-      </View>
-      <View className="w-full mb-6">
-        <Button onPress={onNext} size="md" className="rounded-full">
-          Next
-        </Button>
+
+        {/* CTA Button */}
+        <View className="w-full">
+          <Button 
+            onPress={onNext} 
+            size="sm" 
+            className="w-full"
+          >
+            <Text className="text-sm text-white" variant="medium">Continue</Text>
+          </Button>
+        </View>
       </View>
     </ScrollView>
   );

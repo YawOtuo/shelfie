@@ -1,93 +1,43 @@
-import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
-import {
-  Alert,
-  ActivityIndicator,
-  ScrollView,
-  Switch,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StatusBar } from "expo-status-bar";
 import {
   Bell,
   Building2,
-  ChevronRight,
   HelpCircle,
   Lock,
   LogOut,
   Mail,
-  Moon,
   Shield,
   User,
-  UserCircle,
-  MapPin,
-  Phone,
-  Globe,
-  FileText,
 } from "lucide-react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
+import { Alert, ScrollView, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Header } from "../../components/Header";
+import {
+  AppVersionFooter,
+  SectionHeader,
+  SettingItem,
+  SettingsSection,
+  ShopCard,
+  SwitchSettingItem,
+  UserProfileCard,
+} from "../../components/settings";
 import { SwipeableTabWrapper } from "../../components/SwipeableTabWrapper";
-import { Text } from "../../components/ui/Text";
-import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
-import { useLogout } from "../../lib/hooks/useAuth";
-import { useAuthStore } from "../../lib/stores/authStore";
-import { useCurrentUserShop } from "../../lib/hooks/useShops";
-import { LoadingSpinner } from "../../components/ui/LoadingSpinner";
+import { useToast } from "../../components/ui/ToastProvider";
 import { colors } from "../../lib/colors";
-
-interface SettingItemProps {
-  icon: React.ComponentType<{ color?: string; size?: number }>;
-  title: string;
-  subtitle?: string;
-  onPress?: () => void;
-  rightComponent?: React.ReactNode;
-  showChevron?: boolean;
-}
-
-function SettingItem({
-  icon: Icon,
-  title,
-  subtitle,
-  onPress,
-  rightComponent,
-  showChevron = true,
-}: SettingItemProps) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.7}
-      className="flex-row items-center py-3"
-      disabled={!onPress}
-    >
-      <View className="w-10 h-10 rounded-lg bg-primary/10 items-center justify-center mr-3">
-        <Icon color={colors.primary.DEFAULT} size={20} />
-      </View>
-      <View className="flex-1">
-        <Text className="text-base font-medium text-gray-900">{title}</Text>
-        {subtitle && (
-          <Text className="text-sm text-gray-500 mt-0.5">{subtitle}</Text>
-        )}
-      </View>
-      {rightComponent}
-      {showChevron && onPress && (
-        <View className="ml-2">
-          <ChevronRight color={colors.gray[400]} size={20} />
-        </View>
-      )}
-    </TouchableOpacity>
-  );
-}
+import { useLogout } from "../../lib/hooks/useAuth";
+import { useCurrentUserShop } from "../../lib/hooks/useShops";
+import { useAuthStore } from "../../lib/stores/authStore";
 
 export default function SettingsScreen() {
   const router = useRouter();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const logoutMutation = useLogout();
   const { user } = useAuthStore();
-  const { data: shop, isLoading: shopLoading } = useCurrentUserShop(!!user?.shopId);
+  const { data: shop } = useCurrentUserShop(!!user?.shopId);
+  const { showInfo } = useToast();
 
   const handleLogout = async () => {
     Alert.alert(
@@ -113,340 +63,164 @@ export default function SettingsScreen() {
   return (
     <SwipeableTabWrapper tabIndex={2}>
       <SafeAreaView
-        className="flex-1 bg-white"
+        className="flex-1"
         edges={["left", "right"]}
+        style={{ backgroundColor: colors.white }}
       >
         <StatusBar style="dark" />
         <Header />
-      <ScrollView
-        className="flex-1 bg-white"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      >
-        {/* User Profile Section */}
-        <View className="px-5 pt-6 pb-4">
-          <Card className="p-5" style={{ backgroundColor: colors.primary[100] }}>
-            <TouchableOpacity
+        <ScrollView
+          className="flex-1"
+          style={{ backgroundColor: colors.white }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 32 }}
+        >
+          {/* User Profile Header */}
+          <View className="px-5 pt-4 pb-2">
+            <UserProfileCard
+              username={user?.username}
+              email={user?.email}
+              phoneNumber={user?.phoneNumber}
               onPress={() => router.push("/profile")}
-              activeOpacity={0.7}
-            >
-              <View className="flex-row items-start mb-4">
-                <View className="w-20 h-20 rounded-full bg-primary items-center justify-center mr-4 shadow-sm" style={{ shadowColor: colors.primary.DEFAULT, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 }}>
-                  <UserCircle color={colors.white} size={36} />
-                </View>
-                <View className="flex-1 pt-1">
-                  <Text className="text-xl text-gray-900 mb-1.5" variant="bold">
-                    {user?.username || "User"}
-                  </Text>
-                  <View className="mb-2">
-                    {user?.email && (
-                      <View className="flex-row items-center mb-1.5">
-                        <Mail color={colors.gray[500]} size={14} />
-                        <Text className="text-sm text-gray-700 ml-2 flex-1">
-                          {user.email}
-                        </Text>
-                      </View>
-                    )}
-                    {user?.phoneNumber && (
-                      <View className="flex-row items-center">
-                        <Phone color={colors.gray[500]} size={14} />
-                        <Text className="text-sm text-gray-700 ml-2 flex-1">
-                          {user.phoneNumber}
-                        </Text>
-                      </View>
-                    )}
-                    {!user?.email && !user?.phoneNumber && (
-                      <Text className="text-sm text-gray-500 italic">
-                        No contact information
-                      </Text>
-                    )}
-                  </View>
-                </View>
-                <View className="pt-1">
-                  <ChevronRight color={colors.gray[400]} size={22} />
-                </View>
-              </View>
-              <View className="flex-row items-center justify-end pt-2 border-t border-primary/20">
-                <Text className="text-xs text-gray-600 mr-1">View Profile</Text>
-                <ChevronRight color={colors.gray[500]} size={16} />
-              </View>
-            </TouchableOpacity>
-          </Card>
-        </View>
+            />
+          </View>
 
-        {/* Shop Details Section */}
-        <View className="px-5 mb-4">
-          <Text className="text-xs font-semibold text-gray-500 mb-3 uppercase" variant="semibold">
-            Shops
-          </Text>
-          <TouchableOpacity
-            onPress={() => router.push("/shops")}
-            activeOpacity={0.7}
-          >
-            <Card className="p-4" style={{ backgroundColor: colors.primary[100] }}>
-              {shopLoading ? (
-                <View className="py-4">
-                  <LoadingSpinner />
-                </View>
-              ) : shop ? (
-                <>
-                  <View className="flex-row items-center mb-3">
-                    <View className="w-14 h-14 rounded-full bg-primary items-center justify-center mr-4 shadow-sm" style={{ shadowColor: colors.primary.DEFAULT, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 }}>
-                      <Building2 color={colors.white} size={28} />
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-lg text-gray-900 mb-1" variant="bold">
-                        {shop.name || "Unnamed Shop"}
-                      </Text>
-                      {shop.description && (
-                        <Text className="text-sm text-gray-600 mb-2">
-                          {shop.description}
-                        </Text>
-                      )}
-                      <View className="flex-row items-center">
-                        <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: colors.primary[200] }}>
-                          <Text className="text-xs text-primary" variant="medium">
-                            Current Shop
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                    <ChevronRight color={colors.gray[400]} size={22} />
-                  </View>
+          {/* Current Shop Card */}
+          {shop && (
+            <View className="px-5 pb-2">
+              <ShopCard
+                shop={shop}
+                onPress={() => router.push("/shops")}
+              />
+            </View>
+          )}
 
-                  {/* Quick Info */}
-                  <View className="pt-3 border-t border-primary/20">
-                    <View style={{ gap: 8 }}>
-                      {shop.address && (
-                        <View className="flex-row items-center">
-                          <MapPin color={colors.primary.DEFAULT} size={14} />
-                          <Text className="text-xs text-gray-700 ml-2 flex-1" numberOfLines={1}>
-                            {shop.address}
-                          </Text>
-                        </View>
-                      )}
-                      {shop.phone && (
-                        <View className="flex-row items-center">
-                          <Phone color={colors.primary.DEFAULT} size={14} />
-                          <Text className="text-xs text-gray-700 ml-2 flex-1">
-                            {shop.phone}
-                          </Text>
-                        </View>
-                      )}
-                      {shop.email && (
-                        <View className="flex-row items-center">
-                          <Mail color={colors.primary.DEFAULT} size={14} />
-                          <Text className="text-xs text-gray-700 ml-2 flex-1" numberOfLines={1}>
-                            {shop.email}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-
-                  <View className="flex-row items-center justify-end pt-3 border-t border-primary/20 mt-3">
-                    <Text className="text-xs text-gray-600 mr-1">View All Shops</Text>
-                    <ChevronRight color={colors.gray[500]} size={16} />
-                  </View>
-                </>
-              ) : (
-                <View className="flex-row items-center">
-                  <View className="w-14 h-14 rounded-full bg-primary/10 items-center justify-center mr-4">
-                    <Building2 color={colors.primary.DEFAULT} size={28} />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-base text-gray-900 mb-1" variant="medium">
-                      No shop connected
-                    </Text>
-                    <Text className="text-sm text-gray-600">
-                      Tap to view and manage shops
-                    </Text>
-                  </View>
-                  <ChevronRight color={colors.gray[400]} size={22} />
-                </View>
-              )}
-            </Card>
-          </TouchableOpacity>
-        </View>
-
-        {/* Account Settings */}
-        <View className="px-5 mb-4">
-          <Text className="text-sm font-semibold text-gray-500 mb-3 uppercase">
-            Account
-          </Text>
-          <Card padding="none" className="p-1">
+          {/* Account Section */}
+          <SectionHeader title="Account" icon={User} />
+          <SettingsSection>
             <SettingItem
               icon={User}
               title="Edit Profile"
               subtitle="Update your personal information"
               onPress={() => router.push("/profile")}
             />
-            <View className="h-px bg-gray-100 mx-4" />
+            <View className="h-px" style={{ backgroundColor: colors.gray[100] }} />
             {!user?.shopId && (
               <>
                 <SettingItem
                   icon={Building2}
                   title="Create Shop"
-                  subtitle="Create a new shop to manage inventory"
+                  subtitle="Set up your shop and start selling"
                   onPress={() => router.push("/create-shop")}
                 />
-                <View className="h-px bg-gray-100 mx-4" />
+                <View className="h-px" style={{ backgroundColor: colors.gray[100] }} />
               </>
             )}
             <SettingItem
               icon={Mail}
-              title="Email Settings"
-              subtitle="Manage email preferences"
+              title="Email Preferences"
+              subtitle="Manage your email settings"
               onPress={() => {
-                // TODO: Navigate to email settings
-                Alert.alert("Email Settings", "Coming soon");
+                showInfo("Email preferences coming soon");
               }}
             />
-          </Card>
-        </View>
+          </SettingsSection>
 
-        {/* Notifications */}
-        <View className="px-5 mb-4">
-          <Text className="text-sm font-semibold text-gray-500 mb-3 uppercase">
-            Notifications
-          </Text>
-          <Card padding="none" className="p-1">
-            <View className="flex-row items-center py-3 px-4">
-              <View className="w-10 h-10 rounded-lg bg-primary/10 items-center justify-center mr-3">
-                <Bell color={colors.primary.DEFAULT} size={20} />
-              </View>
-              <View className="flex-1">
-                <Text className="text-base font-medium text-gray-900">
-                  Push Notifications
-                </Text>
-                <Text className="text-sm text-gray-500 mt-0.5">
-                  Receive notifications on your device
-                </Text>
-              </View>
-              <Switch
+          {/* Notifications Section */}
+          <SectionHeader title="Notifications" icon={Bell} />
+          <View className="px-5 mb-2">
+            <Card 
+              padding="none"
+              style={{
+                backgroundColor: colors.white,
+              }}
+            >
+              <SwitchSettingItem
+                icon={Bell}
+                title="Push Notifications"
+                subtitle="Get updates on your device"
                 value={notificationsEnabled}
                 onValueChange={setNotificationsEnabled}
-                trackColor={{ false: colors.gray[200], true: colors.primary.DEFAULT }}
-                thumbColor={colors.white}
               />
-            </View>
-          </Card>
-        </View>
+            </Card>
+          </View>
 
-        {/* Privacy & Security */}
-        <View className="px-5 mb-4">
-          <Text className="text-sm font-semibold text-gray-500 mb-3 uppercase">
-            Privacy & Security
-          </Text>
-          <Card padding="none" className="p-1">
+          {/* Security Section */}
+          <SectionHeader title="Security & Privacy" icon={Shield} />
+          <SettingsSection>
             <SettingItem
               icon={Lock}
               title="Change Password"
-              subtitle="Update your account password"
+              subtitle="Update your account security"
               onPress={() => {
-                // TODO: Navigate to change password
-                Alert.alert("Change Password", "Coming soon");
+                showInfo("Change password feature coming soon");
               }}
             />
-            <View className="h-px bg-gray-100 mx-4" />
+            <View className="h-px" style={{ backgroundColor: colors.gray[100] }} />
             <SettingItem
               icon={Shield}
               title="Privacy Policy"
+              subtitle="Read our privacy terms"
               onPress={() => {
-                // TODO: Navigate to privacy policy
-                Alert.alert("Privacy Policy", "Coming soon");
+                showInfo("Privacy policy coming soon");
               }}
             />
-            <View className="h-px bg-gray-100 mx-4" />
+            <View className="h-px" style={{ backgroundColor: colors.gray[100] }} />
             <SettingItem
               icon={Shield}
               title="Terms of Service"
+              subtitle="Review our terms"
               onPress={() => {
-                // TODO: Navigate to terms of service
-                Alert.alert("Terms of Service", "Coming soon");
+                showInfo("Terms of service coming soon");
               }}
             />
-          </Card>
-        </View>
+          </SettingsSection>
 
-        {/* App Preferences */}
-        <View className="px-5 mb-4">
-          <Text className="text-sm font-semibold text-gray-500 mb-3 uppercase">
-            Preferences
-          </Text>
-          <Card padding="none" className="p-1">
-            <View className="flex-row items-center py-3 px-4">
-              <View className="w-10 h-10 rounded-lg bg-primary/10 items-center justify-center mr-3">
-                <Moon color={colors.primary.DEFAULT} size={20} />
-              </View>
-              <View className="flex-1">
-                <Text className="text-base font-medium text-gray-900">
-                  Dark Mode
-                </Text>
-                <Text className="text-sm text-gray-500 mt-0.5">
-                  Switch to dark theme
-                </Text>
-              </View>
-              <Switch
-                value={darkModeEnabled}
-                onValueChange={setDarkModeEnabled}
-                trackColor={{ false: colors.gray[200], true: colors.primary.DEFAULT }}
-                thumbColor={colors.white}
-              />
-            </View>
-          </Card>
-        </View>
-
-        {/* Help & Support */}
-        <View className="px-5 mb-4">
-          <Text className="text-sm font-semibold text-gray-500 mb-3 uppercase">
-            Help & Support
-          </Text>
-          <Card padding="none" className="p-1">
+          {/* Support Section */}
+          <SectionHeader title="Support" icon={HelpCircle} />
+          <SettingsSection>
             <SettingItem
               icon={HelpCircle}
               title="Help Center"
-              subtitle="Get help and support"
+              subtitle="Browse FAQs and guides"
               onPress={() => {
-                // TODO: Navigate to help center
-                Alert.alert("Help Center", "Coming soon");
+                showInfo("Help center coming soon");
               }}
             />
-            <View className="h-px bg-gray-100 mx-4" />
+            <View className="h-px" style={{ backgroundColor: colors.gray[100] }} />
             <SettingItem
               icon={Mail}
               title="Contact Support"
-              subtitle="Reach out to our team"
+              subtitle="Get in touch with our team"
               onPress={() => {
-                // TODO: Navigate to contact support
-                Alert.alert("Contact Support", "Coming soon");
+                showInfo("Contact support coming soon");
               }}
             />
-          </Card>
-        </View>
+          </SettingsSection>
 
-        {/* Logout Button */}
-        <View className="px-5 mb-4">
-          <Button
-            onPress={handleLogout}
-            variant="outline"
-            size="lg"
-            className="border-0"
-          >
-            <View className="flex-row items-center">
-              <View className="mr-2">
-                <LogOut color={colors.red[500]} size={20} />
-              </View>
-              <Text className="text-red-600 font-semibold">Logout</Text>
-            </View>
-          </Button>
-        </View>
+          {/* Logout Section */}
+          <View className="px-5 mt-4 mb-2">
+            <Card 
+              padding="none"
+              style={{
+                backgroundColor: colors.white,
+                overflow: "hidden",
+              }}
+            >
+              <SettingItem
+                icon={LogOut}
+                title="Logout"
+                subtitle="Sign out of your account"
+                onPress={handleLogout}
+                showChevron={false}
+                variant="danger"
+              />
+            </Card>
+          </View>
 
-        {/* App Version */}
-        <View className="items-center pb-6">
-          <Text className="text-gray-400 text-xs">Shelfie v1.0.0</Text>
-        </View>
-      </ScrollView>
+          {/* App Version Footer */}
+          <AppVersionFooter />
+        </ScrollView>
       </SafeAreaView>
     </SwipeableTabWrapper>
   );

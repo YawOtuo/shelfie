@@ -37,6 +37,9 @@ module.exports = {
             cognitoRedirectSignIn: process.env.EXPO_PUBLIC_COGNITO_REDIRECT_SIGNIN || "shelfie://auth/callback",
             cognitoRedirectSignOut: process.env.EXPO_PUBLIC_COGNITO_REDIRECT_SIGNOUT || "shelfie://auth/signout",
             inventoryBackendUrl: process.env.EXPO_PUBLIC_PROD_INVENTORY_BACKEND_URL || process.env.EXPO_PUBLIC_INVENTORY_BACKEND_URL || "http://192.168.8.115:3000"
-        }
+        },
+        plugins: [
+            "expo-router"
+        ]
     }
 };

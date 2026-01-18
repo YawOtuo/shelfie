@@ -3,9 +3,11 @@ import { Eye, EyeOff } from "lucide-react-native";
 import { useState } from "react";
 import { Alert, ScrollView, View } from "react-native";
 import { useLogin } from "../../lib/hooks/useAuth";
+import { useAuthStore } from "../../lib/stores/authStore";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Text } from "../ui/Text";
+import { ConnectShopStep } from "./ConnectShopStep";
 
 interface LoginFormStepProps {
   onBack: () => void;
@@ -13,10 +15,12 @@ interface LoginFormStepProps {
 
 export function LoginFormStep({ onBack }: LoginFormStepProps) {
   const router = useRouter();
+  const { isAuthenticated, user } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorText, setErrorText] = useState("");
+  const [showShopSelection, setShowShopSelection] = useState(false);
   const loginMutation = useLogin();
 
   const handleLogin = async () => {
@@ -29,12 +33,9 @@ export function LoginFormStep({ onBack }: LoginFormStepProps) {
     loginMutation.mutate(
       { email, password },
       {
-        onSuccess: (data) => {
-          if (data.user.shopId) {
-            router.replace("/(tabs)");
-          } else {
-            router.replace("/select-shop");
-          }
+        onSuccess: () => {
+          // Always show shop selection after login
+          setShowShopSelection(true);
         },
         onError: (error: any) => {
           const errorMessage =
@@ -51,6 +52,15 @@ export function LoginFormStep({ onBack }: LoginFormStepProps) {
     Alert.alert("Coming Soon", "Google login will be available soon");
   };
 
+  // Show shop selection if logged in but no shop
+  if (showShopSelection) {
+    return (
+      <ConnectShopStep
+        onSuccess={() => router.replace("/(tabs)")}
+      />
+    );
+  }
+
   return (
     <ScrollView
       contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
@@ -60,10 +70,10 @@ export function LoginFormStep({ onBack }: LoginFormStepProps) {
       <View className="flex-1 justify-center px-6" style={{ width: "100%" }}>
 
         <View className="mb-8">
-          <Text className="text-3xl font-bold text-white text-center mb-2">
+          <Text className="text-3xl font-bold text-primary-900 text-center mb-2">
             Get Started
           </Text>
-          <Text className="text-base text-primary-100 text-center">
+          <Text className="text-base text-primary-800 text-center">
             Sign in to continue
           </Text>
         </View>
@@ -76,8 +86,8 @@ export function LoginFormStep({ onBack }: LoginFormStepProps) {
             keyboardType="email-address"
             autoCapitalize="none"
             size="md"
-            className="bg-white/5 border border-white/10 rounded-full h-14 px-6 text-white"
-            placeholderTextColor="rgba(224, 209, 188, 0.5)"
+            className="bg-transparent border border-primary-900 rounded-full h-14 px-6 text-primary-900"
+            placeholderTextColor="rgba(102, 82, 55, 0.5)"
           />
         </View>
 
@@ -90,9 +100,9 @@ export function LoginFormStep({ onBack }: LoginFormStepProps) {
               secureTextEntry={!showPassword}
               autoCapitalize="none"
               size="md"
-              className="bg-white/5 border border-white/10 rounded-full h-14 pr-14 px-6 text-white"
-              placeholderTextColor="rgba(224, 209, 188, 0.5)"
-            />
+              className="bg-transparent border border-primary-900 rounded-full h-14 pr-14 px-6 text-primary-900"
+              placeholderTextColor="rgba(102, 82, 55, 0.5)"
+              />
             <Button
               onPress={() => setShowPassword(!showPassword)}
               variant="ghost"
@@ -100,9 +110,9 @@ export function LoginFormStep({ onBack }: LoginFormStepProps) {
               className="absolute right-5 top-0 bottom-0 justify-center"
             >
               {showPassword ? (
-                <EyeOff size={20} color="rgba(224, 209, 188, 0.5)" />
+                <EyeOff size={20} color="rgba(102, 82, 55, 0.5)" />
               ) : (
-                <Eye size={20} color="rgba(224, 209, 188, 0.5)" />
+                <Eye size={20} color="rgba(102, 82, 55, 0.5)" />
               )}
             </Button>
           </View>
@@ -113,7 +123,7 @@ export function LoginFormStep({ onBack }: LoginFormStepProps) {
           variant="ghost"
           size="sm"
           className="self-end mb-8"
-          textClassName="text-primary-200/70 text-sm font-medium"
+          textClassName="text-primary-800/70 text-sm font-medium"
         >
           Forgot password?
         </Button>
@@ -139,12 +149,12 @@ export function LoginFormStep({ onBack }: LoginFormStepProps) {
 
         {/* Sign Up Link */}
         <View className="flex-row justify-center items-center mb-10">
-          <Text className="text-primary-200/50 text-sm">Don't have an account? </Text>
+          <Text className="text-primary-800/50 text-sm">Don't have an account? </Text>
           <Button
             onPress={() => router.push("/signup")}
             variant="ghost"
             size="sm"
-            textClassName="text-white font-bold text-sm"
+            textClassName="text-primary-900 font-bold text-sm"
           >
             Sign up
           </Button>

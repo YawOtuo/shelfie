@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import { ActivityIndicator, TouchableOpacity } from "react-native";
+import { ActivityIndicator, TouchableOpacity, View } from "react-native";
 import { cn } from "../../lib/utils";
 import { Text } from "./Text";
 
@@ -15,9 +15,9 @@ const buttonVariants = cva(
         danger: "bg-red-500",
       },
       size: {
-        sm: "px-3 py-2",
-        md: "px-4 py-3",
-        lg: "px-6 py-4",
+        sm: "px-4 py-3",
+        md: "px-5 py-4",
+        lg: "px-7 py-5",
       },
     },
     defaultVariants: {
@@ -50,7 +50,9 @@ const textVariants = cva("font-semibold text-center", {
 
 interface ButtonProps extends VariantProps<typeof buttonVariants> {
   onPress?: () => void;
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  icon?: React.ReactNode;
+  label?: string;
   className?: string;
   textClassName?: string;
   disabled?: boolean;
@@ -60,6 +62,8 @@ interface ButtonProps extends VariantProps<typeof buttonVariants> {
 export function Button({
   onPress,
   children,
+  icon,
+  label,
   variant,
   size,
   className,
@@ -67,6 +71,57 @@ export function Button({
   disabled = false,
   loading = false,
 }: ButtonProps) {
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <ActivityIndicator
+          color={variant === "primary" || variant === "danger" ? "white" : "#0D0A0B"}
+        />
+      );
+    }
+
+    // If icon and label are provided, render them together
+    if (icon && label) {
+      return (
+        <View className="flex-row items-center justify-center py-1">
+          <View className="mr-4">{icon}</View>
+          <Text className={cn(textVariants({ variant, size }), textClassName)}>
+            {label}
+          </Text>
+        </View>
+      );
+    }
+
+    // If only label is provided
+    if (label) {
+      return (
+        <View className="py-1">
+          <Text className={cn(textVariants({ variant, size }), textClassName)}>
+            {label}
+          </Text>
+        </View>
+      );
+    }
+
+    // If only icon is provided
+    if (icon) {
+      return <View>{icon}</View>;
+    }
+
+    // Fallback to children (backward compatibility)
+    if (typeof children === "string") {
+      return (
+        <Text className={cn(textVariants({ variant, size }), textClassName)}>
+          {children}
+        </Text>
+      );
+    }
+
+    // If children is a ReactNode and variant is primary/danger, ensure white text
+    // Note: For best results, use the label prop or ensure Text components have text-white class
+    return children;
+  };
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -78,17 +133,7 @@ export function Button({
       )}
       activeOpacity={0.7}
     >
-      {loading ? (
-        <ActivityIndicator
-          color={variant === "primary" || variant === "danger" ? "white" : "#0D0A0B"}
-        />
-      ) : typeof children === "string" ? (
-        <Text className={cn(textVariants({ variant, size }), textClassName)}>
-          {children}
-        </Text>
-      ) : (
-        children
-      )}
+      {renderContent()}
     </TouchableOpacity>
   );
 }

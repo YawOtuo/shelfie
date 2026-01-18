@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { View, ViewStyle } from "react-native";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../lib/utils";
 
@@ -25,11 +25,12 @@ const cardVariants = cva("rounded-2xl bg-white", {
 interface CardProps extends VariantProps<typeof cardVariants> {
   children: React.ReactNode;
   className?: string;
+  style?: ViewStyle;
 }
 
-export function Card({ children, variant, padding, className }: CardProps) {
+export function Card({ children, variant, padding, className, style }: CardProps) {
   return (
-    <View className={cn(cardVariants({ variant, padding }), className)}>
+    <View className={cn(cardVariants({ variant, padding }), className)} style={style}>
       {children}
     </View>
   );

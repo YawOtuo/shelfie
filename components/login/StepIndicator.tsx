@@ -13,7 +13,7 @@ export function StepIndicator({ currentStep, totalSteps }: StepIndicatorProps) {
         <View
           key={step}
           className={`h-1.5 rounded-full mx-1 transition-all duration-300 ${
-            step === currentStep ? "w-8 bg-primary" : "w-2 bg-white/10"
+            step === currentStep ? "w-8 bg-primary-900" : "w-2 bg-primary-400/30"
           }`}
         />
       ))}

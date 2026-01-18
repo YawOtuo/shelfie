@@ -1,15 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useAuthStore } from '../stores/authStore';
 import {
-  register,
-  login,
-  refreshToken,
-  logout,
-  getCurrentUser,
   connectToShop,
+  getCurrentUser,
+  login,
+  logout,
+  refreshToken,
+  register,
 } from '../api/auth';
-import { LoginInput, RegisterInput, ConnectToShopInput } from '../types/auth';
+import { useAuthStore } from '../stores/authStore';
+import { ConnectToShopInput, LoginInput, RegisterInput } from '../types/auth';
 
 // Query keys
 export const authKeys = {
@@ -114,13 +114,23 @@ export const useRefreshToken = () => {
 };
 
 export const useConnectToShop = () => {
-  const { updateUser } = useAuthStore();
+  const { updateUser, setAuth } = useAuthStore();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: ConnectToShopInput) => connectToShop(data),
     onSuccess: async (data) => {
-      await updateUser(data.user);
+      // If response includes tokens, update auth completely
+      if (data.accessToken && data.refreshToken) {
+        await setAuth({
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          user: data.user,
+        });
+      } else {
+        // Otherwise just update user
+        await updateUser(data.user);
+      }
       queryClient.setQueryData(authKeys.currentUser(), data.user);
     },
   });

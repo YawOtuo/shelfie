@@ -1,31 +1,42 @@
 import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { ArrowLeft } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Header } from "../components/Header";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Text } from "../components/ui/Text";
+import { useToast } from "../components/ui/ToastProvider";
 import { useCurrentUser } from "../lib/hooks/useAuth";
 import { useCreateShop } from "../lib/hooks/useShops";
 import { useAuthStore } from "../lib/stores/authStore";
 
 export default function CreateShopScreen() {
   const router = useRouter();
-  const { user, updateUser } = useAuthStore();
+  const { updateUser } = useAuthStore();
   const [name, setName] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const { refetch: refetchUser } = useCurrentUser();
+  const { showSuccess, showError } = useToast();
 
   const createShopMutation = useCreateShop();
 
   const handleCreateShop = async () => {
     if (!name.trim()) {
-      Alert.alert("Validation Error", "Shop name is required");
+      showError("Shop name is required");
       return;
     }
 
+    // Prevent multiple clicks
+    if (isProcessing || createShopMutation.isPending) {
+      return;
+    }
+
+    setIsProcessing(true);
+
     try {
-      const shop = await createShopMutation.mutateAsync({
+      await createShopMutation.mutateAsync({
         name: name.trim(),
       });
 
@@ -37,59 +48,87 @@ export default function CreateShopScreen() {
         await updateUser(updatedUserData.data);
       }
 
-      // Navigate to home since user is now connected to a shop
-      router.replace("/(tabs)");
+      showSuccess("Shop created successfully!");
+      
+      // Navigate immediately after success
+      setTimeout(() => {
+        router.replace("/(tabs)");
+      }, 100);
     } catch (error: any) {
-      Alert.alert("Error", error?.response?.data?.message || "Failed to create shop");
+      setIsProcessing(false);
+      showError(error?.response?.data?.message || "Failed to create shop");
     }
   };
 
+  const isLoading = isProcessing || createShopMutation.isPending;
+
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
-      <Header showBack={true} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1"
-      >
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1, paddingTop: 20, paddingBottom: 20 }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+    <View className="flex-1 bg-white">
+      <StatusBar style="dark" />
+      <SafeAreaView className="flex-1" edges={["left", "right", "top"]}>
+        {/* Custom Header */}
+        <View className="flex-row items-center px-6 py-4">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="mr-3 p-2 -ml-2"
+            activeOpacity={0.7}
+          >
+            <ArrowLeft size={24} color="rgba(102, 82, 55, 0.7)" />
+          </TouchableOpacity>
+          <Text className="text-xl font-bold text-primary-900 flex-1" variant="bold">
+            Shelfie
+          </Text>
+        </View>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="flex-1"
         >
-          <View className="px-6">
-            <View className="mb-6">
-              <Text className="text-2xl font-bold text-gray-900 mb-2">
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1, paddingTop: 20, paddingBottom: 20 }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View className="px-6">
+              <View className="mb-6">
+                <Text className="text-3xl font-bold text-primary-900 mb-2">
+                  Create Shop
+                </Text>
+                <Text className="text-base text-primary-800">
+                  Create a new shop to start managing your inventory
+                </Text>
+              </View>
+
+              <View className="mb-6">
+                <View className="mb-2">
+                  <Text className="text-sm font-medium text-primary-800">
+                    Shop Name *
+                  </Text>
+                </View>
+                <Input
+                  value={name}
+                  onChangeText={setName}
+                  placeholder="Enter shop name"
+                  autoCapitalize="words"
+                  editable={!isLoading}
+                  className="bg-transparent border border-primary-900 rounded-full h-14 px-6 text-primary-900"
+                  placeholderTextColor="rgba(102, 82, 55, 0.5)"
+                />
+              </View>
+
+              <Button
+                onPress={handleCreateShop}
+                loading={isLoading}
+                disabled={!name.trim() || isLoading}
+                size="lg"
+                className="w-full rounded-full min-h-14 py-4 bg-primary"
+              >
                 Create Shop
-              </Text>
-              <Text className="text-sm text-gray-600">
-                Create a new shop to start managing your inventory
-              </Text>
+              </Button>
             </View>
-
-            <View className="mb-6">
-              <Input
-                label="Shop Name *"
-                value={name}
-                onChangeText={setName}
-                placeholder="Enter shop name"
-                autoCapitalize="words"
-                className="mb-6"
-              />
-            </View>
-
-            <Button
-              onPress={handleCreateShop}
-              loading={createShopMutation.isPending}
-              disabled={!name.trim() || createShopMutation.isPending}
-              size="lg"
-              className="w-full"
-            >
-              Create Shop
-            </Button>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }
 
