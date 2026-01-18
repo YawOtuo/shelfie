@@ -82,9 +82,9 @@ yarn web
 
 ## Brand Colors
 
-- **Primary**: `#D2B48C` (Shelfie beige)
-- **Primary Dark**: `#A0826D`
-- **Primary Light**: `#E8D4B8`
+- **Primary**: `#b49a67` (Shelfie golden tan)
+- **Primary Dark**: `#9A8257`
+- **Primary Light**: `#E0D1BC`
 
 ## Components
 
@@ -190,3 +190,4 @@ Search is performed both server-side (via API) and client-side for instant feedb
 0BSD
 
 # shelfie-mobile-buyer
+# shelfie
