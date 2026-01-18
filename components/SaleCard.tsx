@@ -47,7 +47,7 @@ export function SaleCard({ sale, onPress }: SaleCardProps) {
           <View className="flex-row items-start justify-between">
             <View className="flex-row items-start flex-[3] mr-4">
               <View className="w-9 h-9 bg-primary/10 rounded-full items-center justify-center mr-3 mt-0.5">
-                <Calendar size={16} color="#A0826D" strokeWidth={2.5} />
+                <Calendar size={16} color="#b49a67" strokeWidth={2.5} />
               </View>
               <View className="flex-1">
                 <Text className="text-xs text-gray-500 mb-0.5">Date & Time</Text>
@@ -58,7 +58,7 @@ export function SaleCard({ sale, onPress }: SaleCardProps) {
             </View>
             <View className="flex-row items-start flex-1">
               <View className="w-9 h-9 bg-primary/10 rounded-full items-center justify-center mr-3 mt-0.5">
-                <ShoppingBag size={16} color="#D2B48C" strokeWidth={2.5} />
+                <ShoppingBag size={16} color="#b49a67" strokeWidth={2.5} />
               </View>
               <View>
                 <Text className="text-xs text-gray-500 mb-0.5">Items</Text>
@@ -75,7 +75,7 @@ export function SaleCard({ sale, onPress }: SaleCardProps) {
           <View className="px-5 py-3 bg-gray-50/50 border-b border-gray-100">
             <View className="flex-row items-center">
               <View className="w-9 h-9 bg-primary/10 rounded-full items-center justify-center mr-3">
-                <User size={16} color="#D2B48C" strokeWidth={2.5} />
+                <User size={16} color="#b49a67" strokeWidth={2.5} />
               </View>
               <View>
                 <Text className="text-xs text-gray-500 mb-0.5">Customer</Text>

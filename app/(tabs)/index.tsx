@@ -13,6 +13,7 @@ import { Header } from "../../components/Header";
 import { ItemCard } from "../../components/ItemCard";
 import { ItemDetailSheet } from "../../components/ItemDetailSheet";
 import { NoShopConnected } from "../../components/NoShopConnected";
+import { SwipeableTabWrapper } from "../../components/SwipeableTabWrapper";
 import { BottomSheet } from "../../components/ui/BottomSheet";
 import { Button } from "../../components/ui/Button";
 import { EmptyState } from "../../components/ui/EmptyState";
@@ -194,47 +195,54 @@ export default function InventoryScreen() {
   // Show loading state
   if (isLoading && !items.length) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
-        <Header />
-        <View className="flex-1 items-center justify-center">
-          <LoadingSpinner size="large" />
-          <Text className="text-gray-600 mt-4">Loading items...</Text>
-        </View>
-      </SafeAreaView>
+      <SwipeableTabWrapper tabIndex={0}>
+        <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
+          <Header />
+          <View className="flex-1 items-center justify-center">
+            <LoadingSpinner size="large" />
+            <Text className="text-gray-600 mt-4">Loading items...</Text>
+          </View>
+        </SafeAreaView>
+      </SwipeableTabWrapper>
     );
   }
 
   // Show error state
   if (error && !items.length) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
-        <Header />
-        <View className="flex-1 items-center justify-center px-6">
-          <Text className="text-red-600 text-center mb-4">
-            {error instanceof Error ? error.message : "Failed to load items"}
-          </Text>
-          <Button onPress={() => refetch()} size="lg">
-            Retry
-          </Button>
-        </View>
-      </SafeAreaView>
+      <SwipeableTabWrapper tabIndex={0}>
+        <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
+          <Header />
+          <View className="flex-1 items-center justify-center px-6">
+            <Text className="text-red-600 text-center mb-4">
+              {error instanceof Error ? error.message : "Failed to load items"}
+            </Text>
+            <Button onPress={() => refetch()} size="lg">
+              Retry
+            </Button>
+          </View>
+        </SafeAreaView>
+      </SwipeableTabWrapper>
     );
   }
 
   // Show message if no shop
   if (!shopId) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
-        <Header />
-        <NoShopConnected message="Please connect to a shop or create one to view inventory" />
-      </SafeAreaView>
+      <SwipeableTabWrapper tabIndex={0}>
+        <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
+          <Header />
+          <NoShopConnected message="Please connect to a shop or create one to view inventory" />
+        </SafeAreaView>
+      </SwipeableTabWrapper>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
-      <StatusBar style="dark" />
-      <Header />
+    <SwipeableTabWrapper tabIndex={0}>
+      <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
+        <StatusBar style="dark" />
+        <Header />
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -371,6 +379,7 @@ export default function InventoryScreen() {
           </View>
         </View>
       </BottomSheet>
-    </SafeAreaView>
+      </SafeAreaView>
+    </SwipeableTabWrapper>
   );
 }

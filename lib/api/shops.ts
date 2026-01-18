@@ -60,4 +60,9 @@ export const getCurrentUserShop = async (): Promise<Shop> => {
   return response.data;
 };
 
+export const getUserShops = async (): Promise<Shop[]> => {
+  const response = await inventoryAxios.get<Shop[]>('/shops/me/shops');
+  return response.data;
+};
+
 

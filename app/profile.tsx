@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { LogOut, Mail, Phone, User as UserIcon, Edit2, ChevronRight } from "lucide-react-native";
-import { ScrollView, TouchableOpacity, View, Alert } from "react-native";
+import { ScrollView, View, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Header } from "../components/Header";
 import { Card } from "../components/ui/Card";
@@ -142,10 +142,10 @@ export default function ProfileScreen() {
           {/* Logout Section */}
           <View className="mb-6">
             <Card padding="none" className="p-1">
-              <TouchableOpacity
+              <Button
                 onPress={handleLogout}
-                activeOpacity={0.7}
-                className="flex-row items-center py-3 px-4"
+                variant="ghost"
+                className="flex-row items-center py-3 px-4 w-full justify-start"
               >
                 <View className="w-10 h-10 rounded-lg bg-red-100 items-center justify-center mr-3">
                   <LogOut color={colors.red[500]} size={20} />
@@ -159,7 +159,7 @@ export default function ProfileScreen() {
                   </Text>
                 </View>
                 <ChevronRight color={colors.gray[400]} size={20} />
-              </TouchableOpacity>
+              </Button>
             </Card>
           </View>
 

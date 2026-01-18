@@ -4,7 +4,6 @@ import {
   Image,
   ScrollView,
   TextInput,
-  TouchableOpacity,
   View,
   ActivityIndicator,
 } from "react-native";
@@ -340,16 +339,18 @@ export function ItemDetailSheet({
                 <Text className="text-sm font-medium text-gray-500 mb-2" variant="medium">
                   Image
                 </Text>
-                <TouchableOpacity
+                <Button
                   onPress={handlePickImage}
-                  className="w-full rounded-2xl px-4 py-3 border border-gray-300 bg-white items-center justify-center flex-row"
-                  activeOpacity={0.7}
+                  variant="outline"
+                  className="w-full rounded-2xl px-4 py-3"
                 >
-                  <ImageIcon size={20} color="#6B7280" />
-                  <Text className="text-base text-gray-700 ml-2">
-                    {imageUrl ? "Change Image" : "Select Image from Gallery"}
-                  </Text>
-                </TouchableOpacity>
+                  <View className="flex-row items-center">
+                    <ImageIcon size={20} color="#6B7280" />
+                    <Text className="text-base text-gray-700 ml-2">
+                      {imageUrl ? "Change Image" : "Select Image from Gallery"}
+                    </Text>
+                  </View>
+                </Button>
                 {imageUrl && (
                   <View className="mt-3">
                     <Image
@@ -357,12 +358,15 @@ export function ItemDetailSheet({
                       className="w-full h-40 rounded-xl"
                       resizeMode="cover"
                     />
-                    <TouchableOpacity
+                    <Button
                       onPress={() => setImageUrl("")}
-                      className="mt-2 items-center"
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2"
+                      textClassName="text-sm text-red-500"
                     >
-                      <Text className="text-sm text-red-500">Remove Image</Text>
-                    </TouchableOpacity>
+                      Remove Image
+                    </Button>
                   </View>
                 )}
               </>

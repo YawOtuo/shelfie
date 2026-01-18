@@ -16,7 +16,7 @@ import { Card } from "../components/ui/Card";
 import { EmptyState } from "../components/ui/EmptyState";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { Text } from "../components/ui/Text";
-import { useShops } from "../lib/hooks/useShops";
+import { useUserShops } from "../lib/hooks/useShops";
 import { useConnectToShop } from "../lib/hooks/useAuth";
 import { Shop } from "../lib/types/shop";
 
@@ -24,7 +24,7 @@ export default function SelectShopScreen() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
-  const { data: shops, isLoading: shopsLoading, error: shopsError } = useShops();
+  const { data: shops, isLoading: shopsLoading, error: shopsError } = useUserShops();
   const connectToShopMutation = useConnectToShop();
 
   // Step Indicator Component
@@ -191,9 +191,9 @@ export default function SelectShopScreen() {
             
             {/* Create New Shop Button */}
             {shops.length > 0 && (
-              <TouchableOpacity
+              <Button
                 onPress={() => router.push("/create-shop")}
-                activeOpacity={0.7}
+                variant="outline"
               >
                 <Card className="p-4 border-2 border-dashed border-primary/30 bg-primary/5">
                   <View className="flex-row items-center justify-center">
@@ -207,7 +207,7 @@ export default function SelectShopScreen() {
                     </View>
                   </View>
                 </Card>
-              </TouchableOpacity>
+              </Button>
             )}
           </View>
         </ScrollView>

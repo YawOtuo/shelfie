@@ -8,9 +8,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-primary",
+        primary: "bg-secondary",
         secondary: "bg-gray-200",
-        outline: "border-2 border-primary bg-transparent",
+        outline: "border-2 border-secondary bg-transparent",
         ghost: "bg-transparent",
         danger: "bg-red-500",
       },
@@ -29,13 +29,13 @@ const buttonVariants = cva(
 
 const textVariants = cva("font-semibold text-center", {
   variants: {
-    variant: {
-      primary: "text-white",
-      secondary: "text-gray-800",
-      outline: "text-primary",
-      ghost: "text-primary",
-      danger: "text-white",
-    },
+      variant: {
+        primary: "text-white",
+        secondary: "text-gray-800",
+        outline: "text-secondary",
+        ghost: "text-primary",
+        danger: "text-white",
+      },
     size: {
       sm: "text-sm",
       md: "text-base",
@@ -80,7 +80,7 @@ export function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === "primary" || variant === "danger" ? "white" : "#D2B48C"}
+          color={variant === "primary" || variant === "danger" ? "white" : "#0D0A0B"}
         />
       ) : typeof children === "string" ? (
         <Text className={cn(textVariants({ variant, size }), textClassName)}>

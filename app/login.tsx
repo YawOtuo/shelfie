@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import { useRef, useState } from "react";
 import { Dimensions, KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
@@ -70,35 +69,9 @@ export default function LoginScreen() {
   };
 
   return (
-    <View className="flex-1 bg-[#12100E]">
+    <View className="flex-1 bg-primary-900">
       <StatusBar style="light" />
       
-      {/* Background Design Elements */}
-      <View className="absolute inset-0 overflow-hidden">
-        <LinearGradient
-          colors={["#1A0F0D", "#0F0907", "#0A0504"]}
-          className="absolute inset-0"
-        />
-        {/* Abstract Glow Blobs */}
-        <View 
-          className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-primary-600/10" 
-          style={{ transform: [{ scale: 1.8 }] }} 
-        />
-        <View 
-          className="absolute top-1/4 -left-40 w-[500px] h-[500px] rounded-full bg-primary-800/5" 
-          style={{ transform: [{ scale: 1.5 }] }} 
-        />
-        <View 
-          className="absolute bottom-0 -right-20 w-80 h-80 rounded-full bg-primary-400/5" 
-          style={{ transform: [{ scale: 1.2 }] }} 
-        />
-        {/* Subtle mesh/texture effect - can be simulated with another gradient or just blobs */}
-        <LinearGradient
-          colors={["transparent", "rgba(0,0,0,0.3)"]}
-          className="absolute inset-0"
-        />
-      </View>
-
       <SafeAreaView className="flex-1" edges={["left", "right"]}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}

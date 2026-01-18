@@ -10,6 +10,7 @@ import {
   getShopAcceptedUsers,
   getShopUnacceptedUsers,
   getCurrentUserShop,
+  getUserShops,
 } from '../api/shops';
 import { CreateShopInput, UpdateShopInput } from '../types/shop';
 
@@ -47,6 +48,14 @@ export const useCurrentUserShop = (enabled: boolean = true) => {
   return useQuery({
     queryKey: [...shopKeys.all, 'current-user'] as const,
     queryFn: getCurrentUserShop,
+    enabled,
+  });
+};
+
+export const useUserShops = (enabled: boolean = true) => {
+  return useQuery({
+    queryKey: [...shopKeys.all, 'user-shops'] as const,
+    queryFn: getUserShops,
     enabled,
   });
 };

@@ -4,6 +4,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AuthGuard } from "../components/AuthGuard";
 import { ToastProvider } from "../components/ui/ToastProvider";
 import "../global.css";
@@ -56,31 +57,33 @@ export default function RootLayout() {
   if (!isReady) {
     return (
       <View className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#A0826D" />
+        <ActivityIndicator size="large" color="#b49a67" />
       </View>
     );
   }
 
   return (
-    <QueryProvider>
-      <ToastProvider>
-        <AuthGuard>
-          <View className="flex-1 bg-white">
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="login" options={{ headerShown: false }} />
-              <Stack.Screen name="signup" options={{ headerShown: false }} />
-              <Stack.Screen name="select-shop" options={{ headerShown: false }} />
-              <Stack.Screen name="create-shop" options={{ headerShown: false }} />
-              <Stack.Screen name="profile" options={{ headerShown: false }} />
-              <Stack.Screen name="notifications" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-          </View>
-        </AuthGuard>
-      </ToastProvider>
-    </QueryProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryProvider>
+        <ToastProvider>
+          <AuthGuard>
+            <View className="flex-1 bg-white">
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="login" options={{ headerShown: false }} />
+                <Stack.Screen name="signup" options={{ headerShown: false }} />
+                <Stack.Screen name="select-shop" options={{ headerShown: false }} />
+                <Stack.Screen name="create-shop" options={{ headerShown: false }} />
+                <Stack.Screen name="profile" options={{ headerShown: false }} />
+                <Stack.Screen name="notifications" options={{ headerShown: false }} />
+                <Stack.Screen name="+not-found" />
+              </Stack>
+            </View>
+          </AuthGuard>
+        </ToastProvider>
+      </QueryProvider>
+    </GestureHandlerRootView>
   );
 }
   

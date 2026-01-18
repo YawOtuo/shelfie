@@ -28,6 +28,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { Header } from "../../components/Header";
+import { SwipeableTabWrapper } from "../../components/SwipeableTabWrapper";
 import { Text } from "../../components/ui/Text";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
@@ -110,12 +111,13 @@ export default function SettingsScreen() {
 
 
   return (
-    <SafeAreaView
-      className="flex-1 bg-white"
-      edges={["left", "right"]}
-    >
-      <StatusBar style="dark" />
-      <Header />
+    <SwipeableTabWrapper tabIndex={2}>
+      <SafeAreaView
+        className="flex-1 bg-white"
+        edges={["left", "right"]}
+      >
+        <StatusBar style="dark" />
+        <Header />
       <ScrollView
         className="flex-1 bg-white"
         showsVerticalScrollIndicator={false}
@@ -445,7 +447,8 @@ export default function SettingsScreen() {
           <Text className="text-gray-400 text-xs">Shelfie v1.0.0</Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </SwipeableTabWrapper>
   );
 }
 

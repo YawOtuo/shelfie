@@ -60,7 +60,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
   if (!isAuthReady || isLoading) {
     return (
       <View className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#A0826D" />
+        <ActivityIndicator size="large" color="#b49a67" />
         <Text className="text-gray-600 mt-4">Loading...</Text>
       </View>
     );

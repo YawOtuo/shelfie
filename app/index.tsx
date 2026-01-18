@@ -1,8 +1,8 @@
 import { Redirect } from "expo-router";
-import { useAuthStore } from "../lib/stores/authStore";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { Text } from "../components/ui/Text";
+import { useAuthStore } from "../lib/stores/authStore";
 
 export default function IndexScreen() {
   const { isAuthenticated, user, isLoading, initialize } = useAuthStore();
@@ -19,7 +19,7 @@ export default function IndexScreen() {
   if (!isReady || isLoading) {
     return (
       <View className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#A0826D" />
+        <ActivityIndicator size="large" color="#b49a67" />
         <Text className="text-gray-600 mt-4">Loading...</Text>
       </View>
     );

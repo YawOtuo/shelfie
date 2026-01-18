@@ -1,6 +1,5 @@
-import { AxiosInstance, AxiosError } from "axios";
+import { AxiosError, AxiosInstance } from "axios";
 import { useAuthStore } from "../stores/authStore";
-import { refreshToken } from "../api/auth";
 
 let isRefreshing = false;
 let failedQueue: Array<{

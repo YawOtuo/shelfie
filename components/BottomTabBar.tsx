@@ -2,7 +2,6 @@ import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Building2, DollarSign, Settings } from "lucide-react-native";
 import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import PagerView from "react-native-pager-view";
 import { Text } from "./ui/Text";
 
 const tabIcons = {
@@ -11,19 +10,9 @@ const tabIcons = {
   "settings": Settings,
 };
 
-interface BottomTabBarPropsWithPager extends BottomTabBarProps {
-  pagerRef?: React.RefObject<PagerView | null>;
-}
-
-const routeToIndex: Record<string, number> = {
-  "index": 0,
-  "sales": 1,
-  "settings": 2,
-};
-
-export function BottomTabBar(props: BottomTabBarPropsWithPager) {
+export function BottomTabBar(props: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const { state, descriptors, navigation, pagerRef } = props;
+  const { state, descriptors, navigation } = props;
 
   return (
     <View
@@ -62,11 +51,6 @@ export function BottomTabBar(props: BottomTabBarPropsWithPager) {
             });
 
             if (!isFocused && !event.defaultPrevented) {
-              // Sync pager if available
-              const pageIndex = routeToIndex[route.name] ?? index;
-              if (pagerRef?.current) {
-                pagerRef.current.setPage(pageIndex);
-              }
               navigation.navigate(route.name, route.params);
             }
           };

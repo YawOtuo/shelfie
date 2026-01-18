@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { Building2, Plus, Check, Mail, Phone, MapPin, Globe } from "lucide-react-native";
-import { ScrollView, TouchableOpacity, View, Alert, RefreshControl } from "react-native";
+import { ScrollView, View, Alert, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Header } from "../components/Header";
 import { Card } from "../components/ui/Card";
@@ -117,9 +117,9 @@ export default function ShopsScreen() {
           </View>
 
           {/* Create New Shop Button */}
-          <TouchableOpacity
+          <Button
             onPress={() => router.push("/create-shop")}
-            activeOpacity={0.7}
+            variant="outline"
             className="mb-6"
           >
             <Card className="p-4 border-2 border-dashed border-primary/30" style={{ backgroundColor: colors.primary[100] }}>
@@ -134,7 +134,7 @@ export default function ShopsScreen() {
                 </View>
               </View>
             </Card>
-          </TouchableOpacity>
+          </Button>
 
           {/* Shops List */}
           {!shops || shops.length === 0 ? (

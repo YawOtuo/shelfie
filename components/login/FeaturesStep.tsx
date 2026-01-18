@@ -40,7 +40,7 @@ export function FeaturesStep({ onNext }: FeaturesStepProps) {
             return (
               <View
                 key={index}
-                className="bg-white/5 border border-white/10 rounded-3xl p-5 mb-1"
+                className="mb-1"
               >
                 <View className="flex-1">
                   <Text className="text-xl font-bold text-white mb-1">

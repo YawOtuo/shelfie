@@ -36,7 +36,7 @@ const mapNotificationType = (type?: string): NotificationType => {
 };
 
 const getNotificationIcon = (type: NotificationType) => {
-  const iconProps = { size: 20, color: "#D2B48C" };
+  const iconProps = { size: 20, color: "#b49a67" };
   switch (type) {
     case "order":
       return <Package {...iconProps} />;
@@ -64,7 +64,7 @@ const getNotificationColor = (type: NotificationType) => {
     case "saved":
       return "#EF4444";
     case "system":
-      return "#D2B48C";
+      return "#b49a67";
     default:
       return "#6B7280";
   }
@@ -290,11 +290,14 @@ export default function NotificationsScreen() {
                   <Text className="text-sm text-gray-600">
                     {unreadCount} {unreadCount === 1 ? "unread notification" : "unread notifications"}
                   </Text>
-                  <TouchableOpacity onPress={handleMarkAllAsRead}>
-                    <Text className="text-primary text-sm font-medium">
-                      Mark all as read
-                    </Text>
-                  </TouchableOpacity>
+                  <Button
+                    onPress={handleMarkAllAsRead}
+                    variant="ghost"
+                    size="sm"
+                    textClassName="text-primary text-sm font-medium"
+                  >
+                    Mark all as read
+                  </Button>
                 </View>
               )}
               {notifications.map((notification) => (

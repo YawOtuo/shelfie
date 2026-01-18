@@ -1,30 +1,30 @@
 import { StatusBar } from "expo-status-bar";
 import { DollarSign, Plus, ShoppingBag, TrendingUp } from "lucide-react-native";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
+    Alert,
     RefreshControl,
     ScrollView,
     TouchableOpacity,
     View,
-    Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CreateSaleSheet } from "../../components/CreateSaleSheet";
 import { Header } from "../../components/Header";
 import { NoShopConnected } from "../../components/NoShopConnected";
 import { SaleCard } from "../../components/SaleCard";
+import { SwipeableTabWrapper } from "../../components/SwipeableTabWrapper";
 import { BottomSheet } from "../../components/ui/BottomSheet";
 import { Button } from "../../components/ui/Button";
 import { EmptyState } from "../../components/ui/EmptyState";
+import { LoadingSpinner } from "../../components/ui/LoadingSpinner";
 import { SearchInput } from "../../components/ui/SearchInput";
 import { Text } from "../../components/ui/Text";
-import { LoadingSpinner } from "../../components/ui/LoadingSpinner";
-import { useItems } from "../../lib/hooks/useItems";
 import { useRecentlySoldItems, useSellInventory } from "../../lib/hooks/useInventory";
+import { useItems } from "../../lib/hooks/useItems";
 import { useAuthStore } from "../../lib/stores/authStore";
-import { Item } from "../../lib/types/item";
-import { CreateSaleInput, Sale } from "../../lib/types/sale";
 import { InventoryWithRelations } from "../../lib/types/inventory";
+import { CreateSaleInput, Sale } from "../../lib/types/sale";
 
 export default function SalesScreen() {
   const { user } = useAuthStore();
@@ -145,45 +145,52 @@ export default function SalesScreen() {
   // Show loading state
   if ((salesLoading || itemsLoading) && !sales.length) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
-        <Header />
-        <View className="flex-1 items-center justify-center">
-          <LoadingSpinner size="large" />
-          <Text className="text-gray-600 mt-4">Loading sales...</Text>
-        </View>
-      </SafeAreaView>
+      <SwipeableTabWrapper tabIndex={1}>
+        <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
+          <Header />
+          <View className="flex-1 items-center justify-center">
+            <LoadingSpinner size="large" />
+            <Text className="text-gray-600 mt-4">Loading sales...</Text>
+          </View>
+        </SafeAreaView>
+      </SwipeableTabWrapper>
     );
   }
 
   // Show error state
   if (salesError && !sales.length) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
-        <Header />
-        <View className="flex-1 items-center justify-center px-6">
-          <Text className="text-red-600 text-center mb-4">
-            {salesError instanceof Error ? salesError.message : "Failed to load sales"}
-          </Text>
-          <Button onPress={() => refetchSales()} size="lg">
-            Retry
-          </Button>
-        </View>
-      </SafeAreaView>
+      <SwipeableTabWrapper tabIndex={1}>
+        <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
+          <Header />
+          <View className="flex-1 items-center justify-center px-6">
+            <Text className="text-red-600 text-center mb-4">
+              {salesError instanceof Error ? salesError.message : "Failed to load sales"}
+            </Text>
+            <Button onPress={() => refetchSales()} size="lg">
+              Retry
+            </Button>
+          </View>
+        </SafeAreaView>
+      </SwipeableTabWrapper>
     );
   }
 
   // Show message if no shop
   if (!shopId) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
-        <Header />
-        <NoShopConnected message="Please connect to a shop or create one to view sales" />
-      </SafeAreaView>
+      <SwipeableTabWrapper tabIndex={1}>
+        <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
+          <Header />
+          <NoShopConnected message="Please connect to a shop or create one to view sales" />
+        </SafeAreaView>
+      </SwipeableTabWrapper>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
+    <SwipeableTabWrapper tabIndex={1}>
+      <SafeAreaView className="flex-1 bg-white" edges={["left", "right"]}>
       <StatusBar style="dark" />
       <Header />
       <ScrollView
@@ -207,7 +214,7 @@ export default function SalesScreen() {
             >
               <View className="flex-row items-center mb-2">
                 <View className="w-7 h-7 rounded-full bg-white items-center justify-center">
-                  <DollarSign size={16} color="#D2B48C" strokeWidth={2.5} />
+                  <DollarSign size={16} color="#b49a67" strokeWidth={2.5} />
                 </View>
                 <Text className="text-xs text-gray-600 ml-2 font-medium">Today's Revenue</Text>
               </View>
@@ -407,6 +414,7 @@ export default function SalesScreen() {
           )}
         </ScrollView>
       </BottomSheet>
-    </SafeAreaView>
+      </SafeAreaView>
+    </SwipeableTabWrapper>
   );
 }

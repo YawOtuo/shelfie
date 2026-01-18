@@ -3,7 +3,6 @@ import { useState, useEffect, useRef } from "react";
 import {
   ScrollView,
   TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { BottomSheet } from "./ui/BottomSheet";
@@ -172,13 +171,13 @@ export function CreateSaleSheet({
                     </View>
                   ) : (
                     filteredItems.map((item) => (
-                      <TouchableOpacity
+                      <Button
                         key={item.id}
                         onPress={() => addItem(item)}
-                        className="px-4 py-3 border-b border-gray-100 last:border-b-0"
-                        activeOpacity={0.7}
+                        variant="ghost"
+                        className="px-4 py-3 border-b border-gray-100 last:border-b-0 rounded-none"
                       >
-                        <View className="flex-row items-center justify-between">
+                        <View className="flex-row items-center justify-between w-full">
                           <View className="flex-1">
                             <Text className="text-sm font-medium text-gray-900" variant="medium">
                               {item.name}
@@ -189,7 +188,7 @@ export function CreateSaleSheet({
                           </View>
                           <Plus size={18} color={colors.primary.DEFAULT} />
                         </View>
-                      </TouchableOpacity>
+                      </Button>
                     ))
                   )}
                 </ScrollView>
@@ -213,12 +212,14 @@ export function CreateSaleSheet({
                           Available: {si.item.quantity}
                         </Text>
                       </View>
-                        <TouchableOpacity
+                        <Button
                           onPress={() => removeItem(si.item.id)}
+                          variant="ghost"
+                          size="sm"
                           className="p-1"
                         >
                           <X size={16} color={colors.red[500]} />
-                        </TouchableOpacity>
+                        </Button>
                     </View>
 
                     <View className="flex-row items-end gap-3">
@@ -227,8 +228,10 @@ export function CreateSaleSheet({
                           Quantity
                         </Text>
                         <View className="flex-row items-center bg-gray-100 rounded-xl">
-                          <TouchableOpacity
+                          <Button
                             onPress={() => updateQuantity(si.item.id, -1)}
+                            variant="ghost"
+                            size="sm"
                             className="p-2"
                             disabled={si.quantity <= 1}
                           >
@@ -236,12 +239,14 @@ export function CreateSaleSheet({
                               size={16}
                               color={si.quantity <= 1 ? colors.gray[300] : colors.gray[500]}
                             />
-                          </TouchableOpacity>
+                          </Button>
                           <Text className="px-4 py-2 text-sm font-medium text-gray-900" variant="medium">
                             {si.quantity}
                           </Text>
-                          <TouchableOpacity
+                          <Button
                             onPress={() => updateQuantity(si.item.id, 1)}
+                            variant="ghost"
+                            size="sm"
                             className="p-2"
                             disabled={si.quantity >= si.item.quantity}
                           >
@@ -251,7 +256,7 @@ export function CreateSaleSheet({
                                 si.quantity >= si.item.quantity ? colors.gray[300] : colors.gray[500]
                               }
                             />
-                          </TouchableOpacity>
+                          </Button>
                         </View>
                       </View>
 

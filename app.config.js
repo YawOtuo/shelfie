@@ -11,7 +11,7 @@ module.exports = {
         splash: {
             image: "./assets/splash-icon.png",
             resizeMode: "contain",
-            backgroundColor: "#D2B48C"
+            backgroundColor: "#b49a67"
         },
         ios: {
             bundleIdentifier: "com.shelfie.buyer",
@@ -21,7 +21,7 @@ module.exports = {
             package: "com.shelfie.buyer",
             adaptiveIcon: {
                 foregroundImage: "./assets/adaptive-icon.png",
-                backgroundColor: "#D2B48C"
+                backgroundColor: "#b49a67"
             },
             edgeToEdgeEnabled: true,
             predictiveBackGestureEnabled: false
@@ -35,7 +35,8 @@ module.exports = {
             cognitoWebClientId: process.env.EXPO_PUBLIC_COGNITO_WEB_CLIENT_ID,
             cognitoDomain: process.env.EXPO_PUBLIC_COGNITO_DOMAIN,
             cognitoRedirectSignIn: process.env.EXPO_PUBLIC_COGNITO_REDIRECT_SIGNIN || "shelfie://auth/callback",
-            cognitoRedirectSignOut: process.env.EXPO_PUBLIC_COGNITO_REDIRECT_SIGNOUT || "shelfie://auth/signout"
+            cognitoRedirectSignOut: process.env.EXPO_PUBLIC_COGNITO_REDIRECT_SIGNOUT || "shelfie://auth/signout",
+            inventoryBackendUrl: process.env.EXPO_PUBLIC_PROD_INVENTORY_BACKEND_URL || process.env.EXPO_PUBLIC_INVENTORY_BACKEND_URL || "http://192.168.8.115:3000"
         }
     }
 };

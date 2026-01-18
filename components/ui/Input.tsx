@@ -1,4 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
+import { LucideIcon } from "lucide-react-native";
+import React from "react";
 import { TextInput, View } from "react-native";
 import { cn } from "../../lib/utils";
 import { Text } from "./Text";
@@ -24,18 +26,24 @@ const inputVariants = cva(
   }
 );
 
-interface InputProps extends VariantProps<typeof inputVariants> {
+export interface InputProps extends VariantProps<typeof inputVariants> {
   value?: string;
   onChangeText?: (text: string) => void;
   placeholder?: string;
   className?: string;
   label?: string;
+  labelIcon?: LucideIcon;
+  labelIconColor?: string;
   error?: string;
   secureTextEntry?: boolean;
   keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
   editable?: boolean;
   placeholderTextColor?: string;
+  inputRef?: React.Ref<TextInput>;
+  onFocus?: () => void;
+  returnKeyType?: "done" | "next" | "search" | "send" | "go";
+  blurOnSubmit?: boolean;
 }
 
 export function Input({
@@ -46,19 +54,31 @@ export function Input({
   size,
   className,
   label,
+  labelIcon: LabelIcon,
+  labelIconColor = "#0e7a3c",
   error,
   secureTextEntry,
   keyboardType = "default",
   autoCapitalize = "sentences",
   editable = true,
   placeholderTextColor = "#9CA3AF",
+  inputRef,
+  onFocus,
+  returnKeyType,
+  blurOnSubmit,
 }: InputProps) {
   return (
     <View className="w-full">
       {label && (
-        <Text className="text-sm font-medium text-gray-500 mb-1">{label}</Text>
+        <View className="flex-row items-center mb-2">
+          {LabelIcon && <LabelIcon size={18} color={labelIconColor} />}
+          <Text className={`text-sm font-medium text-gray-700 ${LabelIcon ? "ml-2" : ""}`}>
+            {label}
+          </Text>
+        </View>
       )}
       <TextInput
+        ref={inputRef}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
@@ -67,6 +87,9 @@ export function Input({
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
         editable={editable}
+        onFocus={onFocus}
+        returnKeyType={returnKeyType}
+        blurOnSubmit={blurOnSubmit}
         className={cn(
           inputVariants({ variant: error ? "error" : variant, size }),
           className

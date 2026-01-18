@@ -1,4 +1,4 @@
-import { TouchableOpacity, View } from "react-native";
+import { View } from "react-native";
 import { Button } from "../ui/Button";
 import { Text } from "../ui/Text";
 
@@ -22,9 +22,15 @@ export function WelcomeStep({ onNext, onSkip }: WelcomeStepProps) {
         <Button onPress={onNext} size="md" className="rounded-full mb-3">
           Next
         </Button>
-        <TouchableOpacity onPress={onSkip} className="py-2">
-          <Text className="text-primary-200 text-center text-sm">Skip</Text>
-        </TouchableOpacity>
+        <Button
+          onPress={onSkip}
+          variant="ghost"
+          size="sm"
+          className="py-2"
+          textClassName="text-primary-200 text-center text-sm"
+        >
+          Skip
+        </Button>
       </View>
     </View>
   );
