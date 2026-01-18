@@ -1,5 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { AlertTriangle, Package } from "lucide-react-native";
+import { AlertTriangle } from "lucide-react-native";
 import { useState } from "react";
 import { Image, TouchableOpacity, View } from "react-native";
 import { Item } from "../lib/types/item";
@@ -21,14 +21,14 @@ export function ItemCard({ item, onPress }: ItemCardProps) {
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <Card className="mb-4 overflow-hidden shadow-md" variant="default" padding="none">
-        <View className="flex-row">
+        <View className="flex-row items-center justify-center px-1">
           {/* Image Section with Gradient Overlay */}
-          <View className="w-28 h-28 relative overflow-hidden rounded-l-2xl">
+          <View className="w-20 h-20 relative overflow-hidden rounded-2xl">
             {hasImage && !imageError && item.image_url ? (
               <>
                 <Image
                   source={{ uri: item.image_url }}
-                  className="w-full h-full"
+                  className="w-full h-full "
                   resizeMode="cover"
                   onError={() => setImageError(true)}
                 />
@@ -40,17 +40,15 @@ export function ItemCard({ item, onPress }: ItemCardProps) {
                 )}
               </>
             ) : (
-              <View className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 items-center justify-center">
-                <Package size={40} color="#9CA3AF" strokeWidth={1.5} />
-              </View>
+              <View className="w-full h-full bg-primary-50" />
             )}
-            
+
             {/* Low Stock Badge on Image */}
             {isLowStock && (
               <View className="absolute bottom-2 left-2 right-2">
                 <View className="flex-row items-center justify-center bg-white/95 backdrop-blur-sm rounded-lg px-2 py-1">
                   <AlertTriangle size={12} color="#DC2626" strokeWidth={2.5} />
-                  <Text className="text-xs font-semibold text-red-600 ml-1" variant="semibold">
+                  <Text className="text-xxs font-semibold text-red-600 ml-1" variant="semibold">
                     Low Stock
                   </Text>
                 </View>
@@ -62,15 +60,15 @@ export function ItemCard({ item, onPress }: ItemCardProps) {
           <View className="flex-1 p-4 justify-between">
             {/* Top Section - Name and Category */}
             <View>
-              <Text 
-                className="text-base font-semibold text-gray-900 mb-1" 
-                variant="semibold"
+              <Text
+                className="text-base  text-gray-900"
+                variant="medium"
                 numberOfLines={2}
               >
                 {item.name}
               </Text>
-              
-              <View className="flex-row items-center gap-2">
+
+              {/* <View className="flex-row items-center gap-2">
                 {item.category && (
                   <View className="bg-primary/10 px-2 py-0.5 rounded-md">
                     <Text className="text-xs text-primary font-medium" variant="medium">
@@ -78,28 +76,46 @@ export function ItemCard({ item, onPress }: ItemCardProps) {
                     </Text>
                   </View>
                 )}
-              </View>
+              </View> */}
             </View>
 
             {/* Bottom Section - Stock Info */}
-            <View className="flex-row items-center justify-between mt-2">
+            <View className="flex-row items-center justify-between mt-1">
+
+              {/* <Text className="text-xs text-gray-500 mb-0.5">In Stock</Text> */}
+              <View className="flex-row items-baseline">
+
+                <Text className="text-sm text-gray-400 ml-1">
+                  GHS {" "}
+                </Text>
+
+                <Text
+                  className={`text-base text-gray-900`}
+                  variant="regular"
+                >
+                  {item.unit_price}
+                </Text>
+
+              </View>
+
+
               <View>
-                <Text className="text-xs text-gray-500 mb-0.5">In Stock</Text>
+                {/* <Text className="text-xs text-gray-500 mb-0.5">In Stock</Text> */}
                 <View className="flex-row items-baseline">
-                  <Text 
-                    className={`text-2xl font-bold ${isLowStock ? "text-red-600" : "text-gray-900"}`} 
-                    variant="bold"
+                  <Text
+                    className={`text-base ${isLowStock ? "text-red-600" : "text-gray-900"}`}
+                    variant="regular"
                   >
                     {item.quantity}
                   </Text>
-                  <Text className="text-sm text-gray-400 ml-1">
-                    units
+                  <Text className="text-xs text-gray-400 ml-1">
+                    units rem.
                   </Text>
                 </View>
               </View>
 
               {/* Stock Level Indicator */}
-              <View className="items-end">
+              {/* <View className="items-end">
                 <Text className="text-xs text-gray-500 mb-1">Stock Level</Text>
                 <View className="flex-row items-center gap-1">
                   {[...Array(5)].map((_, i) => {
@@ -121,7 +137,7 @@ export function ItemCard({ item, onPress }: ItemCardProps) {
                     );
                   })}
                 </View>
-              </View>
+              </View> */}
             </View>
           </View>
         </View>
